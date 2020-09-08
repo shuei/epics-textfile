@@ -1,0 +1,1 @@
+device(waveform,INST_IO,devWfTextFile,"Text File")
