@@ -110,8 +110,7 @@ static long read_li(struct longinRecord *prec)
         return -1;
     }
 
-    strncpy(filename, plink->value.instio.string, fsize);
-    filename[fsize - 1] = '\0';
+    strcpy(filename, plink->value.instio.string);
 
 #ifdef DEBUG
     printf("%s (devTextFileLi): filename: %s\n", prec->name, filename);
