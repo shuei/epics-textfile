@@ -1,4 +1,4 @@
-/* devTextFileAi.c */
+/* devTextFileLi.c */
 /****************************************************************************
  *                         COPYRIGHT NOTIFICATION
  *
@@ -23,7 +23,7 @@
 #include <math.h>
 
 //
-#include "aiRecord.h"
+#include "longinRecord.h"
 #include "dbAccess.h"
 #include "devSup.h"
 #include "alarm.h"
@@ -41,8 +41,8 @@
  * Ai (command/response IO)
  ***************************************************************/
 static long init(void);
-static long init_record(struct aiRecord *);
-static long read_ai(struct aiRecord *);
+static long init_record(struct longinRecord *);
+static long read_li(struct longinRecord *);
 
 struct {
     long        number;
@@ -50,19 +50,19 @@ struct {
     DEVSUPFUN   init;
     DEVSUPFUN   init_record;
     DEVSUPFUN   get_ioint_info;
-    DEVSUPFUN   read_ai;
+    DEVSUPFUN   read_li;
     DEVSUPFUN   special_linconv;
-} devTextFileAi = {
+} devTextFileLi = {
     6,
     NULL,
     init,
     init_record,
     NULL,
-    read_ai,
+    read_li,
     NULL
 };
 
-epicsExportAddress(dset, devTextFileAi);
+epicsExportAddress(dset, devTextFileLi);
 
 //
 static long init(void)
@@ -71,7 +71,7 @@ static long init(void)
 }
 
 //
-static long init_record(struct aiRecord *prec)
+static long init_record(struct longinRecord *prec)
 {
     DBLINK *plink = &prec->inp;
 
@@ -80,13 +80,13 @@ static long init_record(struct aiRecord *prec)
 #endif
 
     if (plink->type != INST_IO) {
-        errlogPrintf("%s (devTextFileAi): address type must be \"INST_IO\"\n", prec->name);
+        errlogPrintf("%s (devTextFileLi): address type must be \"INST_IO\"\n", prec->name);
         return -1;
     }
 
     unsigned long fsize = strlen(plink->value.instio.string) + 1;
     if (fsize > MAX_INSTIO_STRING) {
-        errlogPrintf("%s (devTextFileAi): INP field is too long\n", prec->name);
+        errlogPrintf("%s (devTextFileLi): INP field is too long\n", prec->name);
         return -1;
     }
 
@@ -94,19 +94,19 @@ static long init_record(struct aiRecord *prec)
 }
 
 //
-static long read_ai(struct aiRecord *prec)
+static long read_li(struct longinRecord *prec)
 {
     DBLINK *plink = &prec->inp;
 
     unsigned long fsize = strlen(plink->value.instio.string) + 1;
     if (fsize > MAX_INSTIO_STRING) {
-        errlogPrintf("%s (devTextFileAi): INP field is too long\n", prec->name);
+        errlogPrintf("%s (devTextFileLi): INP field is too long\n", prec->name);
         return -1;
     }
 
     char *filename = calloc(1, fsize);
     if (!filename) {
-        errlogPrintf("%s (devTextFileAi): can't calloc for filename \"%s\"\n", prec->name, plink->value.instio.string);
+        errlogPrintf("%s (devTextFileLi): can't calloc for filename \"%s\"\n", prec->name, plink->value.instio.string);
         return -1;
     }
 
@@ -114,12 +114,12 @@ static long read_ai(struct aiRecord *prec)
     filename[fsize - 1] = '\0';
 
 #ifdef DEBUG
-    printf("%s (devTextFileAi): filename: %s\n", prec->name, filename);
+    printf("%s (devTextFileLi): filename: %s\n", prec->name, filename);
 #endif
 
     FILE *fp = fopen(filename, "r");
     if (fp == NULL) {
-        errlogPrintf("%s (devTextFileAi): can't open \"%s\"\n", prec->name, filename);
+        errlogPrintf("%s (devTextFileLi): can't open \"%s\"\n", prec->name, filename);
         return -1;
     }
 
@@ -149,38 +149,27 @@ static long read_ai(struct aiRecord *prec)
         }
 
 #ifdef DEBUG
-        printf("%s (devTextFileAi): %d %s", prec->name, n, pbuf);
+        printf("%s (devTextFileLi): %d %s", prec->name, n, pbuf);
 #endif
 
         //
-        double val = 0;
-        if (sscanf(pbuf, "%lf", &val) == 1) {
-            // Apply ASLO & AOFF
-            if (prec->aslo != 0.0) {
-                val *= prec->aslo;
-            }
-            val += prec->aoff;
-
-            // Apply smoothing algorithm
-            if (prec->smoo != 0.0 && prec->dpvt && finite(prec->val)) {
-                prec->val = val * (1.00 - prec->smoo) + (prec->val * prec->smoo);
-            } else {
-                prec->val = val;
-            }
+        int32_t val = 0;
+        if (sscanf(pbuf, "%d", &val) == 1) {
+            prec->val = val;
 
             prec->udf = FALSE;
-            //prec->dpvt = &devTextFileAi; // Any non-zero value
+            //prec->dpvt = &devTextFileLi; // Any non-zero value
 
             n++;
             break;
         } else {
-            errlogPrintf("%s (devTextFileAi): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
+            errlogPrintf("%s (devTextFileLi): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
         }
     }
 
     // check if input file was too short
     if (n == 0) {
-        errlogPrintf("%s devTextFileAi): unexpected end-of-file in \"%s\", line %d.\n", prec->name, filename, nline);
+        errlogPrintf("%s devTextFileLi): unexpected end-of-file in \"%s\", line %d.\n", prec->name, filename, nline);
         prec->nsev = INVALID_ALARM;
         prec->nsta = READ_ALARM;
         return 0;
@@ -203,5 +192,5 @@ static long read_ai(struct aiRecord *prec)
     }
 
     //
-    return 2; // no conversion
+    return 0;
 }
