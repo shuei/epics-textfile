@@ -1,1 +1,2 @@
+device(ai,       INST_IO, devTextFileAi, "Text File")
 device(waveform, INST_IO, devTextFileWf, "Text File")

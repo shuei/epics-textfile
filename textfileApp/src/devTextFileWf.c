@@ -32,7 +32,8 @@
 //#include <epicsVersion.h>
 #include <epicsExport.h>
 
-#define MAX_INSTIO_STRING  256
+//
+#include "devTextFile.h"
 #undef DEBUG
 
 /***************************************************************
@@ -65,9 +66,10 @@ epicsExportAddress(dset, devTextFileWf);
 //
 //static int sizeofTypes[] = {0,1,1,2,2,4,4,4,8,2};
 
+//
 static long init(void)
 {
-  return 0;
+    return 0;
 }
 
 //
@@ -111,7 +113,7 @@ static long read_wf(struct waveformRecord *prec)
 
     char *filename = calloc(1, fsize);
     if (!filename) {
-        errlogPrintf("%s (devTextFileWf): can't calloc for filename %s\n", prec->name, plink->value.instio.string);
+        errlogPrintf("%s (devTextFileWf): can't calloc for filename \"%s\"\n", prec->name, plink->value.instio.string);
         return -1;
     }
 
@@ -151,7 +153,7 @@ static long read_wf(struct waveformRecord *prec)
             continue;
         }
 
-        // skip comments
+        // skip comments.
         if (pbuf[0]=='#' || pbuf[0]==';' || pbuf[0]=='!') {
             continue;
         }
@@ -250,7 +252,7 @@ static long read_wf(struct waveformRecord *prec)
 
     // check if input file was too short
     if (n < prec->nelm) { // This might be too intolerant. Perhaps we'd better to set severity/status in case of n==0 (i.e. nothing has been read).
-        errlogPrintf("devTextFileWaveform(%s): unexpected end-of-file in \"%s\", line %d.\n", prec->name, filename, nline);
+        errlogPrintf("%s (devTextFileWf): unexpected end-of-file in \"%s\", line %d.\n", prec->name, filename, nline);
         prec->nsev = INVALID_ALARM;
         prec->nsta = READ_ALARM;
     }
