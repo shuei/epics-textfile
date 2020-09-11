@@ -26,8 +26,9 @@
 #include <waveformRecord.h>
 #include <dbAccess.h>
 #include <devSup.h>
-#include <recGbl.h>
+#include <alarm.h>
 #include <errlog.h>
+#include <recGbl.h>
 //#include <epicsVersion.h>
 #include <epicsExport.h>
 
@@ -242,19 +243,34 @@ static long read_wf(struct waveformRecord *prec)
         }
     }
 
+    //
+    prec->nord = n; //  number of elements that has been read
+    prec->udf = FALSE;
+    //prec->dpvt = &devTextFileWf;  // Any non-zero value
+
+    // check if input file was too short
+    if (n < prec->nelm) { // This might be too intolerant. Perhaps we'd better to set severity/status in case of n==0 (i.e. nothing has been read).
+        errlogPrintf("devTextFileWaveform(%s): unexpected end-of-file in \"%s\", line %d.\n", prec->name, filename, nline);
+        prec->nsev = INVALID_ALARM;
+        prec->nsta = READ_ALARM;
+    }
+
     // cleanup
     if (buf) {
         free(buf);
+        buf = NULL;
     }
 
-    fclose(fp);
+    if (fp) {
+        fclose(fp);
+        fp = NULL;
+    }
 
     if (filename) {
         free(filename);
+        filename = NULL;
     }
 
     //
-    prec->nord = n; //  number of elements that has been read
-
     return 0;
 }
