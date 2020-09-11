@@ -84,7 +84,7 @@ static long init_record(struct waveformRecord *prec)
 
     unsigned long fsize = strlen(plink->value.instio.string) + 1;
     if (fsize > MAX_INSTIO_STRING) {
-        errlogPrintf("%s (devTextFileWf): instio.string is too long\n", prec->name);
+        errlogPrintf("%s (devTextFileWf): INP field is too long\n", prec->name);
         return -1;
     }
 
@@ -98,12 +98,12 @@ static long read_wf(struct waveformRecord *prec)
     //int size = sizeofTypes[prec->ftvl];
 
 #ifdef DEBUG
-    printf("%s (devTextFileWf): nelm:%d, fsize:%d\n",prec->name, prec->nelm, size);
+    printf("%s (devTextFileWf): nelm:%d, fsize:%d\n", prec->name, prec->nelm, size);
 #endif
 
     unsigned long fsize = strlen(plink->value.instio.string) + 1;
     if (fsize > MAX_INSTIO_STRING) {
-        errlogPrintf("%s (devTextFileWf): instio.string is too long\n", prec->name);
+        errlogPrintf("%s (devTextFileWf): INP field is too long\n", prec->name);
         return -1;
     }
 
@@ -132,7 +132,7 @@ static long read_wf(struct waveformRecord *prec)
     void *bptr = prec->bptr;
     int ival;
     double dval;
-    unsigned long n = 0;
+    uint32_t n = 0;
     ssize_t nchars;
 
     while ((nchars = getline(&buf, &bufsiz, fp)) != -1) {
