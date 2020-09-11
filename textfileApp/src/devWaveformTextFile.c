@@ -24,27 +24,22 @@
 /* Modification Log:
  * -----------------
  */
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-
-#include "dbCommon.h"
-#include "waveformRecord.h"
-#include "dbAccess.h"
-#include "devSup.h"
-#include "recGbl.h"
-#include "link.h"
-#include "errlog.h"
-
-#ifndef EPICS_REVISION
-#include <epicsVersion.h>
-#endif
-#if EPICS_REVISION == 14 && EPICS_MODIFICATION >= 2
+//
+#include <waveformRecord.h>
+#include <dbAccess.h>
+#include <devSup.h>
+#include <recGbl.h>
+#include <errlog.h>
+//#include <epicsVersion.h>
 #include <epicsExport.h>
-#endif
 
 #define ERROR  (-1)
 #define MAX_INSTIO_STRING  256
@@ -74,9 +69,9 @@ struct {
   NULL
 };
 
-#if EPICS_REVISION == 14 && EPICS_MODIFICATION >= 2
+//#if EPICS_REVISION == 14 && EPICS_MODIFICATION >= 2
 epicsExportAddress(dset, devWfTextFile);
-#endif
+//#endif
 
 static int sizeofTypes[] = {0,1,1,2,2,4,4,4,8,2};
 
