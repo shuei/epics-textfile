@@ -20,6 +20,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 //
 #include <waveformRecord.h>
@@ -137,10 +138,30 @@ static long read_wf(struct waveformRecord *prec)
 
     while ((nchars = getline(&buf, &bufsiz, fp)) != -1) {
         nline ++;
+        char *pbuf = buf;
+
+        // skip until non white-space character.
+        while(isspace(*pbuf)) {
+            pbuf ++;
+        }
+
+        // skip empty lines.
+        if (strlen(pbuf)==0) {
+            continue;
+        }
+
+        // skip comments
+        if (pbuf[0]=='#' || pbuf[0]==';' || pbuf[0]=='!') {
+            continue;
+        }
+
+#ifdef DEBUG
+        printf("%s (devTextFileWf): %d/%d %s", prec->name, n, prec->nelm, pbuf);
+#endif
 
         switch (prec->ftvl) {
         case DBF_CHAR:
-            if (sscanf(buf, "%d", &ival) == 1) {
+            if (sscanf(pbuf, "%d", &ival) == 1) {
                 int8_t *ptr = bptr;
                 ptr[n] = ival;
                 n++;
@@ -149,7 +170,7 @@ static long read_wf(struct waveformRecord *prec)
             }
             break;
         case DBF_UCHAR:
-            if (sscanf(buf, "%u", &ival) == 1) {
+            if (sscanf(pbuf, "%u", &ival) == 1) {
                 uint8_t *ptr = bptr;
                 ptr[n] = ival;
                 n++;
@@ -158,7 +179,7 @@ static long read_wf(struct waveformRecord *prec)
             }
             break;
         case DBF_SHORT:
-            if (sscanf(buf, "%d", &ival) == 1) {
+            if (sscanf(pbuf, "%d", &ival) == 1) {
                 int16_t *ptr = bptr;
                 ptr[n] = ival;
                 n++;
@@ -167,7 +188,7 @@ static long read_wf(struct waveformRecord *prec)
             }
             break;
         case DBF_USHORT:
-            if (sscanf(buf, "%u", &ival) == 1) {
+            if (sscanf(pbuf, "%u", &ival) == 1) {
                 uint16_t *ptr = bptr;
                 ptr[n] = ival;
                 n++;
@@ -176,7 +197,7 @@ static long read_wf(struct waveformRecord *prec)
             }
             break;
         case DBF_LONG:
-            if (sscanf(buf, "%d", &ival) == 1) {
+            if (sscanf(pbuf, "%d", &ival) == 1) {
                 int32_t *ptr = bptr;
                 ptr[n] = ival;
                 n++;
@@ -185,7 +206,7 @@ static long read_wf(struct waveformRecord *prec)
             }
             break;
         case DBF_ULONG:
-            if (sscanf(buf, "%u", &ival) == 1) {
+            if (sscanf(pbuf, "%u", &ival) == 1) {
                 uint32_t *ptr = bptr;
                 ptr[n] = ival;
                 n++;
@@ -194,7 +215,7 @@ static long read_wf(struct waveformRecord *prec)
             }
             break;
         case DBF_FLOAT:
-            if (sscanf(buf, "%lf", &dval) == 1) {
+            if (sscanf(pbuf, "%lf", &dval) == 1) {
                 float *ptr = bptr;
                 ptr[n] = dval;
                 n++;
@@ -203,7 +224,7 @@ static long read_wf(struct waveformRecord *prec)
             }
             break;
         case DBF_DOUBLE:
-            if (sscanf(buf, "%lf", &dval) == 1) {
+            if (sscanf(pbuf, "%lf", &dval) == 1) {
                 double *ptr = bptr;
                 ptr[n] = dval;
                 n++;
@@ -232,7 +253,8 @@ static long read_wf(struct waveformRecord *prec)
         free(filename);
     }
 
-    prec->nord = n;
+    //
+    prec->nord = n; //  number of elements that has been read
 
     return 0;
 }
