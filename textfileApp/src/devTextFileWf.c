@@ -1,29 +1,18 @@
-/* devWaveformTextFile.c */
+/* devTextFileWf.c */
 /****************************************************************************
  *                         COPYRIGHT NOTIFICATION
  *
- * devWaveformTextFile: A part of EPICS device support for FA-M3 PLC made by
- * Yokogawa
- * Copyright (C) 2004  Jun-ichi Odagiri
+ * Copyright (c) All rights reserved
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * EPICS BASE Versions 3.13.7
+ * and higher are distributed subject to a Software License Agreement found
+ * in file LICENSE that is included with this distribution.
  ****************************************************************************/
-/* Author: Jun-ichi Odagiri */
-/* Modification Log:
- * -----------------
- */
+/*
+  Current Author: Shuei Yamada (shuei@post.kek.jp)
+  Original Author: Jun-ichi Odagiri
+*/
+
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
@@ -41,8 +30,8 @@
 //#include <epicsVersion.h>
 #include <epicsExport.h>
 
-#define ERROR  (-1)
 #define MAX_INSTIO_STRING  256
+#undef DEBUG
 
 /***************************************************************
  * Waveform (command/response IO)
@@ -71,6 +60,7 @@ struct {
 
 epicsExportAddress(dset, devTextFileWf);
 
+//
 static int sizeofTypes[] = {0,1,1,2,2,4,4,4,8,2};
 
 static long init(void)
@@ -78,136 +68,171 @@ static long init(void)
   return 0;
 }
 
-static long init_record(struct waveformRecord *pwf)
+//
+static long init_record(struct waveformRecord *prec)
 {
-  struct link *plink = &pwf->inp;
+    DBLINK *plink = &prec->inp;
 
-  if (plink->type != INST_IO) {
-//      errlogPrintf("devNetDev: address type must be \"INST_IO\"\n");
-      errlogPrintf("devWaveformtextFile: address type must be \"INST_IO\"\n");
-      return ERROR;
-  }
+#ifdef DEBUG
+    printf("%s (devTextFileWf) filename: %s\n", prec->name, plink->value.instio.string);
+#endif
 
-  unsigned long fsize = strlen(plink->value.instio.string) + 1;
-  if (fsize > MAX_INSTIO_STRING) {
-    errlogPrintf("devWaveformTextFile: instio.string is too long\n");
-    return ERROR;
-  }
-
-  return 0; // 2013 Jun 05 - shuei
-}
-
-
-static long read_wf(struct waveformRecord *pwf)
-{
-  struct link *plink = &pwf->inp;
-  uint8_t *bptr = (uint8_t *) pwf->bptr;
-  int size = sizeofTypes[pwf->ftvl];
-
-  /*
-  printf("devWaveformTextFile:\"%s\", nelm:%d, fsize:%d\n",pwf->name, pwf->nelm, size);
-  */
-
-  unsigned long fsize = strlen(plink->value.instio.string) + 1;
-  if (fsize > MAX_INSTIO_STRING) {
-    errlogPrintf("devWaveformTextFile: instio.string is too long\n");
-    return ERROR;
-  }
-
-  char *filename = calloc(1, fsize);
-  if (!filename) {
-    errlogPrintf("devWaveformTextFile: can't calloc for filename\n");
-    return ERROR;
-  }
-
-  strncpy(filename, plink->value.instio.string, fsize);
-  filename[fsize - 1] = '\0';
-
-  /*
-  printf("devWaveformTextFile: filename[%d]: %s\n",(int)fsize,filename);
-  */
-
-  FILE *fp = fopen(filename, "r");
-  if (fp == NULL) {
-    errlogPrintf("devWaveformTextFile: can't open \"%s\"\n", filename);
-    return ERROR;
-  }
-
-  char *line = NULL;
-  size_t len = 0;
-  int ival;
-  double dval;
-  int8_t *p8;
-  uint8_t *pu8;
-  int16_t *p16;
-  uint16_t *pu16;
-  int32_t *p32;
-  uint32_t *pu32;
-  float *pflt;
-  double *pdbl;
-  unsigned long n = 0;
-  ssize_t nchars;
-  while ((nchars = getline(&line, &len, fp)) != -1) {
-    /*
-      printf("devWaveformTextFile: line(%d):%s", n, line);
-    */
-    switch (pwf->ftvl) {
-    case DBF_CHAR:
-       sscanf(line, "%d", &ival);
-       p8 = &bptr[size * n];
-       *p8 = (int8_t) ival;
-       break;
-    case DBF_UCHAR:
-       sscanf(line, "%u", &ival);
-       pu8 = &bptr[size * n];
-       *pu8 = (uint8_t) ival;
-       break;
-    case DBF_SHORT:
-       sscanf(line, "%d", &ival);
-       p16 = &bptr[size * n];
-       *p16 = (int16_t) ival;
-       break;
-    case DBF_USHORT:
-       sscanf(line, "%u", &ival);
-       pu16 = &bptr[size * n];
-       *pu16 = (uint16_t) ival;
-       break;
-    case DBF_LONG:
-       sscanf(line, "%d", &ival);
-       p32 = &bptr[size * n];
-       *p32 = (int32_t) ival;
-       break;
-    case DBF_ULONG:
-       sscanf(line, "%u", &ival);
-       pu32 = &bptr[size * n];
-       *pu32 = (uint32_t) ival;
-       break;
-    case DBF_FLOAT:
-       sscanf(line, "%lf", &dval);
-       pflt = &bptr[size * n];
-       *pflt = (float)  dval;
-       break;
-    case DBF_DOUBLE:
-       sscanf(line, "%lf", &dval);
-       pdbl = &bptr[size * n];
-       *pdbl = (double) dval;
-       break;
-    default:
-       errlogPrintf("devWaveformTextFile: unsuppoted FTVL\n");
-       return(S_db_badField);
+    if (plink->type != INST_IO) {
+        errlogPrintf("%s (devTextFileWf): address type must be \"INST_IO\"\n", prec->name);
+        return -1;
     }
 
-    if (n++ >= pwf->nelm) break;
+    unsigned long fsize = strlen(plink->value.instio.string) + 1;
+    if (fsize > MAX_INSTIO_STRING) {
+        errlogPrintf("%s (devTextFileWf): instio.string is too long\n", prec->name);
+        return -1;
+    }
 
-  }
+    return 0;
+}
 
-  if (line) free(line);
+//
+static long read_wf(struct waveformRecord *prec)
+{
+    DBLINK *plink = &prec->inp;
+    uint8_t *bptr = (uint8_t *) prec->bptr;
+    int size = sizeofTypes[prec->ftvl];
 
-  fclose(fp);
+#ifdef DEBUG
+    printf("%s (devTextFileWf): nelm:%d, fsize:%d\n",prec->name, prec->nelm, size);
+#endif
 
-  if (filename) free(filename);
+    unsigned long fsize = strlen(plink->value.instio.string) + 1;
+    if (fsize > MAX_INSTIO_STRING) {
+        errlogPrintf("%s (devTextFileWf): instio.string is too long\n", prec->name);
+        return -1;
+    }
 
-  pwf->nord = n;
+    char *filename = calloc(1, fsize);
+    if (!filename) {
+        errlogPrintf("%s (devTextFileWf): can't calloc for filename %s\n", prec->name, plink->value.instio.string);
+        return -1;
+    }
 
-  return 0;
+    strncpy(filename, plink->value.instio.string, fsize);
+    filename[fsize - 1] = '\0';
+
+#ifdef DEBUG
+    printf("%s (devTextFileWf): filename: %s\n", prec->name, filename);
+#endif
+
+    FILE *fp = fopen(filename, "r");
+    if (fp == NULL) {
+        errlogPrintf("%s (devTextFileWf): can't open \"%s\"\n", prec->name, filename);
+        return -1;
+    }
+
+    char *buf = NULL;
+    size_t bufsiz = 0;
+    int nline = 0;
+    int ival;
+    double dval;
+    int8_t *p8;
+    uint8_t *pu8;
+    int16_t *p16;
+    uint16_t *pu16;
+    int32_t *p32;
+    uint32_t *pu32;
+    float *pflt;
+    double *pdbl;
+    unsigned long n = 0;
+    ssize_t nchars;
+
+    while ((nchars = getline(&buf, &bufsiz, fp)) != -1) {
+        nline ++;
+
+        switch (prec->ftvl) {
+        case DBF_CHAR:
+            if (sscanf(buf, "%d", &ival) == 1) {
+                p8 = &bptr[size * n];
+                *p8 = (int8_t) ival;
+            } else {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
+            }
+            break;
+        case DBF_UCHAR:
+            if (sscanf(buf, "%u", &ival) == 1) {
+                pu8 = &bptr[size * n];
+                *pu8 = (uint8_t) ival;
+            } else {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
+            }
+            break;
+        case DBF_SHORT:
+            if (sscanf(buf, "%d", &ival) == 1) {
+                p16 = &bptr[size * n];
+                *p16 = (int16_t) ival;
+            } else {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
+            }
+            break;
+        case DBF_USHORT:
+            if (sscanf(buf, "%u", &ival) == 1) {
+                pu16 = &bptr[size * n];
+                *pu16 = (uint16_t) ival;
+            } else {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
+            }
+            break;
+        case DBF_LONG:
+            if (sscanf(buf, "%d", &ival) == 1) {
+                p32 = &bptr[size * n];
+                *p32 = (int32_t) ival;
+            } else {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
+            }
+            break;
+        case DBF_ULONG:
+            if (sscanf(buf, "%u", &ival) == 1) {
+                pu32 = &bptr[size * n];
+                *pu32 = (uint32_t) ival;
+            } else {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
+            }
+            break;
+        case DBF_FLOAT:
+            if (sscanf(buf, "%lf", &dval) == 1) {
+                pflt = &bptr[size * n];
+                *pflt = (float)  dval;
+            } else {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
+            }
+            break;
+        case DBF_DOUBLE:
+            if (sscanf(buf, "%lf", &dval) == 1) {
+                pdbl = &bptr[size * n];
+                *pdbl = (double) dval;
+            } else {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
+            }
+            break;
+        default:
+            errlogPrintf("%s (devTextFileWf): unsuppoted FTVL\n", prec->name);
+            return(S_db_badField);
+        }
+
+        if (n++ >= prec->nelm) {
+            break;
+        }
+    }
+
+    // cleanup
+    if (buf) {
+        free(buf);
+    }
+
+    fclose(fp);
+
+    if (filename) {
+        free(filename);
+    }
+
+    prec->nord = n;
+
+    return 0;
 }
