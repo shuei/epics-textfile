@@ -61,7 +61,7 @@ struct {
 epicsExportAddress(dset, devTextFileWf);
 
 //
-static int sizeofTypes[] = {0,1,1,2,2,4,4,4,8,2};
+//static int sizeofTypes[] = {0,1,1,2,2,4,4,4,8,2};
 
 static long init(void)
 {
@@ -95,8 +95,7 @@ static long init_record(struct waveformRecord *prec)
 static long read_wf(struct waveformRecord *prec)
 {
     DBLINK *plink = &prec->inp;
-    uint8_t *bptr = (uint8_t *) prec->bptr;
-    int size = sizeofTypes[prec->ftvl];
+    //int size = sizeofTypes[prec->ftvl];
 
 #ifdef DEBUG
     printf("%s (devTextFileWf): nelm:%d, fsize:%d\n",prec->name, prec->nelm, size);
@@ -130,16 +129,9 @@ static long read_wf(struct waveformRecord *prec)
     char *buf = NULL;
     size_t bufsiz = 0;
     int nline = 0;
+    void *bptr = prec->bptr;
     int ival;
     double dval;
-    int8_t *p8;
-    uint8_t *pu8;
-    int16_t *p16;
-    uint16_t *pu16;
-    int32_t *p32;
-    uint32_t *pu32;
-    float *pflt;
-    double *pdbl;
     unsigned long n = 0;
     ssize_t nchars;
 
@@ -149,64 +141,72 @@ static long read_wf(struct waveformRecord *prec)
         switch (prec->ftvl) {
         case DBF_CHAR:
             if (sscanf(buf, "%d", &ival) == 1) {
-                p8 = &bptr[size * n];
-                *p8 = (int8_t) ival;
+                int8_t *ptr = bptr;
+                ptr[n] = ival;
+                n++;
             } else {
                 errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
             }
             break;
         case DBF_UCHAR:
             if (sscanf(buf, "%u", &ival) == 1) {
-                pu8 = &bptr[size * n];
-                *pu8 = (uint8_t) ival;
+                uint8_t *ptr = bptr;
+                ptr[n] = ival;
+                n++;
             } else {
                 errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
             }
             break;
         case DBF_SHORT:
             if (sscanf(buf, "%d", &ival) == 1) {
-                p16 = &bptr[size * n];
-                *p16 = (int16_t) ival;
+                int16_t *ptr = bptr;
+                ptr[n] = ival;
+                n++;
             } else {
                 errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
             }
             break;
         case DBF_USHORT:
             if (sscanf(buf, "%u", &ival) == 1) {
-                pu16 = &bptr[size * n];
-                *pu16 = (uint16_t) ival;
+                uint16_t *ptr = bptr;
+                ptr[n] = ival;
+                n++;
             } else {
                 errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
             }
             break;
         case DBF_LONG:
             if (sscanf(buf, "%d", &ival) == 1) {
-                p32 = &bptr[size * n];
-                *p32 = (int32_t) ival;
+                int32_t *ptr = bptr;
+                ptr[n] = ival;
+                n++;
             } else {
                 errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
             }
             break;
         case DBF_ULONG:
             if (sscanf(buf, "%u", &ival) == 1) {
-                pu32 = &bptr[size * n];
-                *pu32 = (uint32_t) ival;
+                uint32_t *ptr = bptr;
+                ptr[n] = ival;
+                n++;
             } else {
                 errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
             }
             break;
         case DBF_FLOAT:
             if (sscanf(buf, "%lf", &dval) == 1) {
-                pflt = &bptr[size * n];
-                *pflt = (float)  dval;
+                float *ptr = bptr;
+                ptr[n] = dval;
+                n++;
             } else {
                 errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
             }
             break;
         case DBF_DOUBLE:
             if (sscanf(buf, "%lf", &dval) == 1) {
-                pdbl = &bptr[size * n];
-                *pdbl = (double) dval;
+                double *ptr = bptr;
+                ptr[n] = dval;
+                n++;
             } else {
                 errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
             }
@@ -216,7 +216,7 @@ static long read_wf(struct waveformRecord *prec)
             return(S_db_badField);
         }
 
-        if (n++ >= prec->nelm) {
+        if (n >= prec->nelm) {
             break;
         }
     }

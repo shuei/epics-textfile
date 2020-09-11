@@ -21,7 +21,7 @@ devTextFile_SRCS += devTextFileWf.c
 
 devTextFile_LIBS += $(EPICS_BASE_IOC_LIBS)
 
-#USR_CFLAGS += -Werror
+USR_CFLAGS += -Werror
 #===========================
 
 include $(TOP)/configure/RULES
