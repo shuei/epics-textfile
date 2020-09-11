@@ -14,10 +14,10 @@ LIBRARY_IOC += devTextFile
 #DBDINC += xxxRecord
 
 # install devTextFile.dbd into <top>/dbd
-DBD += devWaveformTextFile.dbd
+DBD += devTextFile.dbd
 
 # specify all source files to be compiled and added to the library
-devTextFile_SRCS += devWaveformTextFile.c
+devTextFile_SRCS += devTextFileWf.c
 
 devTextFile_LIBS += $(EPICS_BASE_IOC_LIBS)
 

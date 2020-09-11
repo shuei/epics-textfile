@@ -59,7 +59,7 @@ struct {
   DEVSUPFUN   get_ioint_info;
   DEVSUPFUN   read_wf;
   DEVSUPFUN   special_linconv;
-} devWfTextFile = {
+} devTextFileWf = {
   6,
   NULL,
   init,
@@ -69,9 +69,7 @@ struct {
   NULL
 };
 
-//#if EPICS_REVISION == 14 && EPICS_MODIFICATION >= 2
-epicsExportAddress(dset, devWfTextFile);
-//#endif
+epicsExportAddress(dset, devTextFileWf);
 
 static int sizeofTypes[] = {0,1,1,2,2,4,4,4,8,2};
 
