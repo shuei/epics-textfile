@@ -84,11 +84,11 @@ static long init_record(struct aiRecord *prec)
         return -1;
     }
 
-    unsigned long fsize = strlen(plink->value.instio.string) + 1;
-    if (fsize > MAX_INSTIO_STRING) {
-        errlogPrintf("%s (devTextFileAi): INP field is too long\n", prec->name);
-        return -1;
-    }
+    //const size_t fsize = strlen(plink->value.instio.string) + 1;
+    //if (fsize > MAX_INSTIO_STRING) {
+    //    errlogPrintf("%s (devTextFileAi): INP field is too long\n", prec->name);
+    //    return -1;
+    //}
 
     return 0;
 }
@@ -98,11 +98,11 @@ static long read_ai(struct aiRecord *prec)
 {
     DBLINK *plink = &prec->inp;
 
-    unsigned long fsize = strlen(plink->value.instio.string) + 1;
-    if (fsize > MAX_INSTIO_STRING) {
-        errlogPrintf("%s (devTextFileAi): INP field is too long\n", prec->name);
-        return -1;
-    }
+    const size_t fsize = strlen(plink->value.instio.string) + 1;
+    //if (fsize > MAX_INSTIO_STRING) {
+    //    errlogPrintf("%s (devTextFileAi): INP field is too long\n", prec->name);
+    //    return -1;
+    //}
 
     char *filename = calloc(1, fsize);
     if (!filename) {
