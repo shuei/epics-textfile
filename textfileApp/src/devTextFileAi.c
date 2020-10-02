@@ -20,25 +20,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <math.h>
 
 //
 #include "aiRecord.h"
+#include "cantProceed.h"
 #include "dbAccess.h"
 #include "devSup.h"
 #include "alarm.h"
 #include "errlog.h"
 #include "recGbl.h"
 #include "link.h"
-//#include <epicsVersion.h>
-#include <epicsExport.h>
+#include "epicsExport.h"
 
 //
 #include "devTextFile.h"
 #undef DEBUG
 
 /***************************************************************
- * Ai (command/response IO)
+ * ai (command/response IO)
  ***************************************************************/
 static long init(void);
 static long init_record(struct aiRecord *);
@@ -76,19 +80,29 @@ static long init_record(struct aiRecord *prec)
     DBLINK *plink = &prec->inp;
 
 #ifdef DEBUG
-    printf("%s (devTextFileWf) filename: %s\n", prec->name, plink->value.instio.string);
+    printf("%s (devTextFileAi) filename: %s\n", prec->name, plink->value.instio.string);
 #endif
 
+    // Link type must be INST_IO
     if (plink->type != INST_IO) {
         errlogPrintf("%s (devTextFileAi): address type must be \"INST_IO\"\n", prec->name);
+        prec->pact = 1;
         return -1;
     }
 
-    //const size_t fsize = strlen(plink->value.instio.string) + 1;
+    // Allocate private data storage area
+    TextFile_t *dpvt = callocMustSucceed(1, sizeof(TextFile_t), "calloc for private_t failed ");
+    prec->dpvt = dpvt;
+
+    // Extract input filename
+    char *pstr = plink->value.instio.string;
+    const size_t fsize = strlen(pstr) + 1;
     //if (fsize > MAX_INSTIO_STRING) {
-    //    errlogPrintf("%s (devTextFileAi): INP field is too long\n", prec->name);
+    //    errlogPrintf("%s (devTextFileLi): INP field is too long\n", prec->name);
     //    return -1;
     //}
+    dpvt->name = callocMustSucceed(1, fsize, "calloc for filename failed");
+    strcpy(dpvt->name, pstr);
 
     return 0;
 }
@@ -96,21 +110,9 @@ static long init_record(struct aiRecord *prec)
 //
 static long read_ai(struct aiRecord *prec)
 {
-    DBLINK *plink = &prec->inp;
-
-    const size_t fsize = strlen(plink->value.instio.string) + 1;
-    //if (fsize > MAX_INSTIO_STRING) {
-    //    errlogPrintf("%s (devTextFileAi): INP field is too long\n", prec->name);
-    //    return -1;
-    //}
-
-    char *filename = calloc(1, fsize);
-    if (!filename) {
-        errlogPrintf("%s (devTextFileAi): can't calloc for filename \"%s\"\n", prec->name, plink->value.instio.string);
-        return -1;
-    }
-
-    strcpy(filename, plink->value.instio.string);
+    //DBLINK *plink = &prec->inp;
+    TextFile_t *dpvt = prec->dpvt;
+    const char *filename = dpvt->name;
 
 #ifdef DEBUG
     printf("%s (devTextFileAi): filename: %s\n", prec->name, filename);
@@ -119,9 +121,12 @@ static long read_ai(struct aiRecord *prec)
     FILE *fp = fopen(filename, "r");
     if (fp == NULL) {
         errlogPrintf("%s (devTextFileAi): can't open \"%s\"\n", prec->name, filename);
+        prec->nsev = INVALID_ALARM;
+        prec->nsta = READ_ACCESS_ALARM;
         return -1;
     }
 
+    int retval = 2; // no conversion
     char *buf = NULL;
     size_t bufsiz = 0;
     int nline = 0;
@@ -167,9 +172,6 @@ static long read_ai(struct aiRecord *prec)
                 prec->val = val;
             }
 
-            prec->udf = FALSE;
-            //prec->dpvt = &devTextFileAi; // Any non-zero value
-
             n++;
             break;
         } else {
@@ -177,12 +179,15 @@ static long read_ai(struct aiRecord *prec)
         }
     }
 
-    // check if input file was too short
+    //
+    prec->udf = FALSE;
+
+    // check if input file reached unexeted end-of-file
     if (n == 0) {
-        errlogPrintf("%s devTextFileAi): unexpected end-of-file in \"%s\", line %d.\n", prec->name, filename, nline);
+        errlogPrintf("%s (devTextFileAi): unexpected end-of-file in \"%s\", line %d.\n", prec->name, filename, nline);
         prec->nsev = INVALID_ALARM;
         prec->nsta = READ_ALARM;
-        return 0;
+        retval = -1;
     }
 
     // cleanup
@@ -196,11 +201,6 @@ static long read_ai(struct aiRecord *prec)
         fp = NULL;
     }
 
-    if (filename) {
-        free(filename);
-        filename = NULL;
-    }
-
     //
-    return 2; // no conversion
+    return retval;
 }
