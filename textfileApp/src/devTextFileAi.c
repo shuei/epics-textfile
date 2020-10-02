@@ -1,16 +1,16 @@
-/* devTextFileAi.c */
-/****************************************************************************
- *                         COPYRIGHT NOTIFICATION
- *
- * Copyright (c) All rights reserved
- *
- * EPICS BASE Versions 3.13.7
- * and higher are distributed subject to a Software License Agreement found
- * in file LICENSE that is included with this distribution.
- ****************************************************************************/
-/*
-  Author: Shuei YAMADA (shuei@post.kek.jp)
-*/
+// -*- coding: utf-8; mode: c; c-basic-offiset: 4 -*-
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Copyright (c) 2020 High Energy Accelerator Research Organization (KEK)
+//
+// text file Device Support 0.0.0
+// and higher are distributed subject to a Software License Agreement found
+// in file LICENSE that is included with this distribution.
+//
+// Author: Shuei Yamada (shuei@post.kek.jp)
+//
+//////////////////////////////////////////////////////////////////////////
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
