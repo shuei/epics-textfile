@@ -249,7 +249,7 @@ static long read_wf(struct waveformRecord *prec)
     prec->nord = n; //  number of elements that has been read
     prec->udf = FALSE;
 
-    // check if input file reached unexeted end-of-file
+    // check if input file reached unexpected end-of-file
     if (n < prec->nelm) { // This might be too intolerant. Perhaps we'd better to set severity/status in case of n==0 (i.e. nothing has been read).
         errlogPrintf("%s (devTextFileWf): unexpected end-of-file in \"%s\", line %d.\n", prec->name, filename, nline);
         prec->nsev = INVALID_ALARM;

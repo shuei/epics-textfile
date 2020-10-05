@@ -170,7 +170,7 @@ static long read_li(struct longinRecord *prec)
     //
     prec->udf = FALSE;
 
-    // check if input file reached unexeted end-of-file
+    // check if input file reached unexpected end-of-file
     if (n == 0) {
         errlogPrintf("%s (devTextFileLi): unexpected end-of-file in \"%s\", line %d.\n", prec->name, filename, nline);
         prec->nsev = INVALID_ALARM;
