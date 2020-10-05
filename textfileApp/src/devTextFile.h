@@ -16,6 +16,9 @@
 typedef struct {
     IOSCANPVT    ioscanpvt;
     char        *name;
+    bool         keep;
+    ino_t        ino;
+    FILE        *fp;
 } TextFile_t;
 
 #endif

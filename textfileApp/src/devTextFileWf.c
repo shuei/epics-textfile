@@ -93,12 +93,38 @@ static long init_record(struct waveformRecord *prec)
         return -1;
     }
 
+    // Check FTVL field
+    switch (prec->ftvl) {
+    case DBF_CHAR:
+    case DBF_UCHAR:
+    case DBF_SHORT:
+    case DBF_USHORT:
+    case DBF_LONG:
+    case DBF_ULONG:
+    case DBF_FLOAT:
+    case DBF_DOUBLE:
+        break;
+    default:
+        errlogPrintf("%s (devTextFileWf): unsuppoted FTVL\n", prec->name);
+        prec->pact = 1;
+        return -1;
+    }
+
+
     // Allocate private data storage area
     TextFile_t *dpvt = callocMustSucceed(1, sizeof(TextFile_t), "calloc for private_t failed ");
     prec->dpvt = dpvt;
 
     // Extract input filename
     char *pstr = plink->value.instio.string;
+
+    if (pstr[0] == '+') {
+        // keep file opened and rewind on process
+        dpvt->keep = true;
+        pstr++;
+        //printf("[%s]\n", pstr);
+    }
+
     const size_t fsize = strlen(pstr) + 1;
     //if (fsize > MAX_INSTIO_STRING) {
     //    errlogPrintf("%s (devTextFileLi): INP field is too long\n", prec->name);
@@ -106,6 +132,16 @@ static long init_record(struct waveformRecord *prec)
     //}
     dpvt->name = callocMustSucceed(1, fsize, "calloc for filename failed");
     strcpy(dpvt->name, pstr);
+
+    // Open input file if requested
+    if (dpvt->keep) {
+        dpvt->fp = fopen(dpvt->name, "r");
+        if (dpvt->fp == NULL) {
+            errlogPrintf("%s (devTextFileLi): can't open \"%s\"\n", prec->name, dpvt->name);
+            prec->pact = 1;
+            return -1;
+        }
+    }
 
     return 0;
 }
@@ -121,12 +157,31 @@ static long read_wf(struct waveformRecord *prec)
     printf("%s (devTextFileWf): filename: %s, nelm:%d\n", prec->name, filename, prec->nelm);
 #endif
 
-    FILE *fp = fopen(filename, "r");
-    if (fp == NULL) {
-        errlogPrintf("%s (devTextFileWf): can't open \"%s\"\n", prec->name, filename);
-        prec->nsev = INVALID_ALARM;
-        prec->nsta = READ_ACCESS_ALARM;
-        return -1;
+    FILE *fp = 0;
+    if (dpvt->keep) {
+        fp = dpvt->fp;
+        if (fseek(fp, 0L, SEEK_SET)!=0) {
+            errlogPrintf("%s (devTextFileWf): fseek failed for \"%s\" : %s\n", prec->name, filename, strerror(errno));
+            prec->nsev = INVALID_ALARM;
+            prec->nsta = READ_ACCESS_ALARM;
+
+            return -1;
+        }
+        if (fflush(fp)!=0) {
+            errlogPrintf("%s (devTextFileWf): fflush failed for \"%s\" : %s\n", prec->name, filename, strerror(errno));
+            prec->nsev = INVALID_ALARM;
+            prec->nsta = READ_ACCESS_ALARM;
+
+            return -1;
+        }
+    } else {
+        fp = fopen(filename, "r");
+        if (fp == NULL) {
+            errlogPrintf("%s (devTextFileWf): can't open \"%s\"\n", prec->name, filename);
+            prec->nsev = INVALID_ALARM;
+            prec->nsta = READ_ACCESS_ALARM;
+            return -1;
+        }
     }
 
     int retval = 0;
@@ -236,6 +291,7 @@ static long read_wf(struct waveformRecord *prec)
             }
             break;
         default:
+            // this may not happen as FTVL is already checked in init_record().
             errlogPrintf("%s (devTextFileWf): unsuppoted FTVL\n", prec->name);
             return(S_db_badField);
         }
@@ -263,7 +319,7 @@ static long read_wf(struct waveformRecord *prec)
         buf = NULL;
     }
 
-    if (fp) {
+    if (!dpvt->keep) {
         fclose(fp);
         fp = NULL;
     }
