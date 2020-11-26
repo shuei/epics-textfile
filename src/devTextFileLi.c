@@ -217,9 +217,9 @@ static long read_li(struct longinRecord *prec)
     //
     prec->udf = FALSE;
 
-    // check if input file reached unexpected end-of-file
+    // check if any data has been read from the input file
     if (n == 0) {
-        errlogPrintf("%s (devTextFileLi): unexpected end-of-file in \"%s\", line %d.\n", prec->name, filename, nline);
+        errlogPrintf("%s (devTextFileLi): no data was read from the file: \"%s\", line %d.\n", prec->name, filename, nline);
         prec->nsev = INVALID_ALARM;
         prec->nsta = READ_ALARM;
         retval = -1;
