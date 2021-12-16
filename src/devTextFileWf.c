@@ -49,21 +49,21 @@ static long init_record(struct waveformRecord *);
 static long read_wf(struct waveformRecord *);
 
 struct {
-  long        number;
-  DEVSUPFUN   report;
-  DEVSUPFUN   init;
-  DEVSUPFUN   init_record;
-  DEVSUPFUN   get_ioint_info;
-  DEVSUPFUN   read_wf;
-  DEVSUPFUN   special_linconv;
+    long        number;
+    DEVSUPFUN   report;
+    DEVSUPFUN   init;
+    DEVSUPFUN   init_record;
+    DEVSUPFUN   get_ioint_info;
+    DEVSUPFUN   read_wf;
+    DEVSUPFUN   special_linconv;
 } devTextFileWf = {
-  6,
-  NULL,
-  init,
-  init_record,
-  NULL,
-  read_wf,
-  NULL
+    6,
+    NULL,
+    init,
+    init_record,
+    NULL,
+    read_wf,
+    NULL
 };
 
 epicsExportAddress(dset, devTextFileWf);
@@ -127,7 +127,7 @@ static long init_record(struct waveformRecord *prec)
 
     const size_t fsize = strlen(pstr) + 1;
     //if (fsize > MAX_INSTIO_STRING) {
-    //    errlogPrintf("%s (devTextFileLi): INP field is too long\n", prec->name);
+    //    errlogPrintf("%s (devTextFileWf): INP field is too long\n", prec->name);
     //    return -1;
     //}
     dpvt->name = callocMustSucceed(1, fsize, "calloc for filename failed");
@@ -137,7 +137,7 @@ static long init_record(struct waveformRecord *prec)
     if (dpvt->keep) {
         dpvt->fp = fopen(dpvt->name, "r");
         if (dpvt->fp == NULL) {
-            errlogPrintf("%s (devTextFileLi): can't open \"%s\"\n", prec->name, dpvt->name);
+            errlogPrintf("%s (devTextFileWf): can't open \"%s\"\n", prec->name, dpvt->name);
             prec->pact = 1;
             return -1;
         }

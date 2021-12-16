@@ -156,7 +156,7 @@ static long read_li(struct longinRecord *prec)
             return -1;
         }
         if (fflush(fp)!=0) {
-            errlogPrintf("%s (devTextFileAi): fflush failed for \"%s\" : %s\n", prec->name, filename, strerror(errno));
+            errlogPrintf("%s (devTextFileLi): fflush failed for \"%s\" : %s\n", prec->name, filename, strerror(errno));
             prec->nsev = INVALID_ALARM;
             prec->nsta = READ_ACCESS_ALARM;
 
