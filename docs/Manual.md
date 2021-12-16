@@ -6,6 +6,7 @@ Device Support for Text File
 This is a device support for reading values from text file. Following record types are supported:
 - longin
 - ai
+- stringin
 - waveform
 
 # Example

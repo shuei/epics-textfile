@@ -1,3 +1,4 @@
 device(longin,   INST_IO, devTextFileLi, "Text File")
 device(ai,       INST_IO, devTextFileAi, "Text File")
+device(stringin, INST_IO, devTextFileSi, "Text File")
 device(waveform, INST_IO, devTextFileWf, "Text File")
