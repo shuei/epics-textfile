@@ -24,7 +24,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <math.h>
 
 //
 #include "aiRecord.h"
@@ -36,6 +35,7 @@
 #include "recGbl.h"
 #include "link.h"
 #include "epicsExport.h"
+#include "epicsMath.h"
 
 //
 #include "devTextFile.h"
