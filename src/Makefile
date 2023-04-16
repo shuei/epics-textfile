@@ -8,6 +8,10 @@ include $(TOP)/configure/CONFIG
 #==================================================
 # build a support library
 
+#USR_CFLAGS += -Werror
+#USR_CFLAGS += -Wno-deprecated-declarations
+USR_CPPFLAGS += -DUSE_TYPED_RSET -DUSE_TYPED_DSET
+
 LIBRARY_IOC += devTextFile
 
 # xxxRecord.h will be created from xxxRecord.dbd
