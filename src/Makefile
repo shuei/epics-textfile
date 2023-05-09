@@ -5,12 +5,11 @@ include $(TOP)/configure/CONFIG
 #  ADD MACRO DEFINITIONS AFTER THIS LINE
 #=============================
 
+#USR_CFLAGS += -Werror
+USR_CPPFLAGS += -DUSE_TYPED_RSET -DUSE_TYPED_DSET
+
 #==================================================
 # build a support library
-
-#USR_CFLAGS += -Werror
-#USR_CFLAGS += -Wno-deprecated-declarations
-USR_CPPFLAGS += -DUSE_TYPED_RSET -DUSE_TYPED_DSET
 
 LIBRARY_IOC += devTextFile
 
@@ -28,10 +27,8 @@ devTextFile_SRCS += devTextFileWf.c
 
 devTextFile_LIBS += $(EPICS_BASE_IOC_LIBS)
 
-USR_CFLAGS += -Werror
 #===========================
 
 include $(TOP)/configure/RULES
 #----------------------------------------
 #  ADD RULES AFTER THIS LINE
-
