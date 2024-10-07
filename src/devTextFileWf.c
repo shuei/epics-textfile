@@ -69,9 +69,6 @@ struct {
 epicsExportAddress(dset, devTextFileWf);
 
 //
-//static int sizeofTypes[] = {0,1,1,2,2,4,4,4,8,2};
-
-//
 static long init(void)
 {
     return 0;
