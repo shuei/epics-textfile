@@ -230,7 +230,7 @@ static long read_li(struct longinRecord *prec)
 
     // check if any data has been read from the input file
     if (n == 0) {
-        errlogPrintf("%s (devTextFileLi): no data was read from the file: \"%s\", line %d.\n", prec->name, filename, nline);
+        errlogPrintf("%s (devTextFileLi): No data was read from the file: \"%s\"\n", prec->name, filename);
         prec->nsev = INVALID_ALARM;
         prec->nsta = READ_ALARM;
         retval = -1;

@@ -226,7 +226,7 @@ static long read_si(struct stringinRecord *prec)
 
     // check if any data has been read from the input file
     if (n == 0) {
-        errlogPrintf("%s (devTextFileSi): no data was read from the file: \"%s\", line %d.\n", prec->name, filename, nline);
+        errlogPrintf("%s (devTextFileSi): No data was read from the file: \"%s\"\n", prec->name, filename);
         prec->nsev = INVALID_ALARM;
         prec->nsta = READ_ALARM;
         retval = -1;
