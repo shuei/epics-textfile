@@ -210,8 +210,16 @@ static long read_ai(struct aiRecord *prec)
         }
 
         //
-        double val = 0;
-        if (sscanf(pbuf, "%lf", &val) == 1) {
+        char *endptr = 0;
+        errno = 0;
+        double val = strtod(pbuf, &endptr);
+        if (errno!=0) {
+            errlogPrintf("%s (devTextFileAi): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, strerror(errno));
+        } else if (endptr==pbuf) {
+            errlogPrintf("%s (devTextFileAi): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
+        } else {
+            // Read succeeded
+
             // Apply ASLO & AOFF
             if (prec->aslo != 0.0) {
                 val *= prec->aslo;
@@ -227,8 +235,6 @@ static long read_ai(struct aiRecord *prec)
 
             n++;
             break;
-        } else {
-            errlogPrintf("%s (devTextFileAi): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
         }
     }
 

@@ -220,77 +220,112 @@ static long read_wf(struct waveformRecord *prec)
             printf("%s (devTextFileWf): %d/%d %s", prec->name, n, prec->nelm, pbuf);
         }
 
+        //
+        char *endptr = 0;
+        errno = 0;
         switch (prec->ftvl) {
         case DBF_CHAR:
-            if (sscanf(pbuf, "%d", &ival) == 1) {
+            ival = strtol(pbuf, &endptr, 0);
+            if (errno!=0) {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, strerror(errno));
+            } else if (endptr==pbuf) {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
+            } else {
+                // Read succeeded
                 int8_t *ptr = bptr;
                 ptr[n] = ival;
                 n++;
-            } else {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
             }
             break;
         case DBF_UCHAR:
-            if (sscanf(pbuf, "%u", &ival) == 1) {
+            ival = strtol(pbuf, &endptr, 0);
+            if (errno!=0) {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, strerror(errno));
+            } else if (endptr==pbuf) {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
+            } else {
+                // Read succeeded
                 uint8_t *ptr = bptr;
                 ptr[n] = ival;
                 n++;
-            } else {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
             }
             break;
         case DBF_SHORT:
-            if (sscanf(pbuf, "%d", &ival) == 1) {
+            ival = strtol(pbuf, &endptr, 0);
+            if (errno!=0) {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, strerror(errno));
+            } else if (endptr==pbuf) {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
+            } else {
+                // Read succeeded
                 int16_t *ptr = bptr;
                 ptr[n] = ival;
                 n++;
-            } else {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
             }
             break;
         case DBF_USHORT:
-            if (sscanf(pbuf, "%u", &ival) == 1) {
+            ival = strtol(pbuf, &endptr, 0);
+            if (errno!=0) {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, strerror(errno));
+            } else if (endptr==pbuf) {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
+            } else {
+                // Read succeeded
                 uint16_t *ptr = bptr;
                 ptr[n] = ival;
                 n++;
-            } else {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
             }
             break;
         case DBF_LONG:
-            if (sscanf(pbuf, "%d", &ival) == 1) {
+            ival = strtol(pbuf, &endptr, 0);
+            if (errno!=0) {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, strerror(errno));
+            } else if (endptr==pbuf) {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
+            } else {
+                // Read succeeded
                 int32_t *ptr = bptr;
                 ptr[n] = ival;
                 n++;
-            } else {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
             }
             break;
         case DBF_ULONG:
-            if (sscanf(pbuf, "%u", &ival) == 1) {
+            ival = strtol(pbuf, &endptr, 0);
+            if (errno!=0) {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, strerror(errno));
+            } else if (endptr==pbuf) {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
+            } else {
+                // Read succeeded
                 uint32_t *ptr = bptr;
                 ptr[n] = ival;
                 n++;
-            } else {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
             }
             break;
         case DBF_FLOAT:
-            if (sscanf(pbuf, "%lf", &dval) == 1) {
+            dval = strtod(pbuf, &endptr);
+            if (errno!=0) {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, strerror(errno));
+            } else if (endptr==pbuf) {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
+            } else {
+                // Read succeeded
                 float *ptr = bptr;
                 ptr[n] = dval;
                 n++;
-            } else {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
             }
             break;
         case DBF_DOUBLE:
-            if (sscanf(pbuf, "%lf", &dval) == 1) {
+            dval = strtod(pbuf, &endptr);
+            if (errno!=0) {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, strerror(errno));
+            } else if (endptr==pbuf) {
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
+            } else {
+                // Read succeeded
                 double *ptr = bptr;
                 ptr[n] = dval;
                 n++;
-            } else {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
             }
             break;
         default:

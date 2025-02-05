@@ -209,14 +209,19 @@ static long read_li(struct longinRecord *prec)
         }
 
         //
-        int32_t val = 0;
-        if (sscanf(pbuf, "%d", &val) == 1) {
+        char *endptr = 0;
+        errno = 0;
+        int32_t val = strtol(pbuf, &endptr, 0);
+        if (errno!=0) {
+            errlogPrintf("%s (devTextFileLi): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, strerror(errno));
+        } else if (endptr==pbuf) {
+            errlogPrintf("%s (devTextFileLi): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
+        } else {
+            // Read succeeded
             prec->val = val;
 
             n++;
             break;
-        } else {
-            errlogPrintf("%s (devTextFileLi): parse error in \"%s\", line %d.\n", prec->name, filename, nline);
         }
     }
 
