@@ -38,7 +38,9 @@
 
 //
 #include "devTextFile.h"
-#undef DEBUG
+
+//
+static int devTextFileLiDebug = 0;
 
 /***************************************************************
  * longin (command/response IO)
@@ -78,9 +80,10 @@ static long init_record(struct longinRecord *prec)
 {
     DBLINK *plink = &prec->inp;
 
-#ifdef DEBUG
-    printf("%s (devTextFileLi) filename: %s\n", prec->name, plink->value.instio.string);
-#endif
+    //
+    if (devTextFileLiDebug>0) {
+        printf("%s (devTextFileLi) filename: %s\n", prec->name, plink->value.instio.string);
+    }
 
     // Link type must be INST_IO
     if (plink->type != INST_IO) {
@@ -141,10 +144,12 @@ static long read_li(struct longinRecord *prec)
     TextFile_t *dpvt = prec->dpvt;
     const char *filename = dpvt->name;
 
-#ifdef DEBUG
-    printf("%s (devTextFileLi): filename: %s\n", prec->name, filename);
-#endif
+    //
+    if (devTextFileLiDebug>0) {
+        printf("%s (devTextFileLi): filename: %s\n", prec->name, filename);
+    }
 
+    //
     FILE *fp = 0;
     if (dpvt->keep) {
         fp = dpvt->fp;
@@ -198,9 +203,10 @@ static long read_li(struct longinRecord *prec)
             continue;
         }
 
-#ifdef DEBUG
-        printf("%s (devTextFileLi): %d %s", prec->name, n, pbuf);
-#endif
+        //
+        if (devTextFileLiDebug>0) {
+            printf("%s (devTextFileLi): %d %s", prec->name, n, pbuf);
+        }
 
         //
         int32_t val = 0;
@@ -239,3 +245,8 @@ static long read_li(struct longinRecord *prec)
     //
     return retval;
 }
+
+// Register symbol(s) used by IOC core
+epicsExportAddress(int, devTextFileLiDebug);
+
+// end

@@ -39,7 +39,9 @@
 
 //
 #include "devTextFile.h"
-#undef DEBUG
+
+//
+static int devTextFileAiDebug = 0;
 
 /***************************************************************
  * ai (command/response IO)
@@ -79,9 +81,10 @@ static long init_record(struct aiRecord *prec)
 {
     DBLINK *plink = &prec->inp;
 
-#ifdef DEBUG
-    printf("%s (devTextFileAi) filename: %s\n", prec->name, plink->value.instio.string);
-#endif
+    //
+    if (devTextFileAiDebug>0) {
+        printf("%s (devTextFileAi) filename: %s\n", prec->name, plink->value.instio.string);
+    }
 
     // Link type must be INST_IO
     if (plink->type != INST_IO) {
@@ -141,10 +144,12 @@ static long read_ai(struct aiRecord *prec)
     TextFile_t *dpvt = prec->dpvt;
     const char *filename = dpvt->name;
 
-#ifdef DEBUG
-    printf("%s (devTextFileAi): filename: %s\n", prec->name, filename);
-#endif
+    //
+    if (devTextFileAiDebug>0) {
+        printf("%s (devTextFileAi): filename: %s\n", prec->name, filename);
+    }
 
+    //
     FILE *fp = 0;
     if (dpvt->keep) {
         fp = dpvt->fp;
@@ -199,9 +204,10 @@ static long read_ai(struct aiRecord *prec)
             continue;
         }
 
-#ifdef DEBUG
-        printf("%s (devTextFileAi): %d %s", prec->name, n, pbuf);
-#endif
+        //
+        if (devTextFileAiDebug>0) {
+            printf("%s (devTextFileAi): %d %s", prec->name, n, pbuf);
+        }
 
         //
         double val = 0;
@@ -251,3 +257,8 @@ static long read_ai(struct aiRecord *prec)
     //
     return retval;
 }
+
+// Register symbol(s) used by IOC core
+epicsExportAddress(int, devTextFileAiDebug);
+
+// end

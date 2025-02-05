@@ -38,7 +38,9 @@
 
 //
 #include "devTextFile.h"
-#undef DEBUG
+
+//
+static int devTextFileSiDebug = 0;
 
 /***************************************************************
  * stringin (command/response IO)
@@ -78,9 +80,10 @@ static long init_record(struct stringinRecord *prec)
 {
     DBLINK *plink = &prec->inp;
 
-#ifdef DEBUG
-    printf("%s (devTextFileSi) filename: %s\n", prec->name, plink->value.instio.string);
-#endif
+    //
+    if (devTextFileSiDebug>0) {
+        printf("%s (devTextFileSi) filename: %s\n", prec->name, plink->value.instio.string);
+    }
 
     // Link type must be INST_IO
     if (plink->type != INST_IO) {
@@ -141,10 +144,12 @@ static long read_si(struct stringinRecord *prec)
     TextFile_t *dpvt = prec->dpvt;
     const char *filename = dpvt->name;
 
-#ifdef DEBUG
-    printf("%s (devTextFileSi): filename: %s\n", prec->name, filename);
-#endif
+    //
+    if (devTextFileSiDebug>0) {
+        printf("%s (devTextFileSi): filename: %s\n", prec->name, filename);
+    }
 
+    //
     FILE *fp = 0;
     if (dpvt->keep) {
         fp = dpvt->fp;
@@ -198,9 +203,10 @@ static long read_si(struct stringinRecord *prec)
             continue;
         }
 
-//#ifdef DEBUG
-        printf("%s (devTextFileSi): %d %s", prec->name, n, pbuf);
-//#endif
+        //
+        if (devTextFileSiDebug>0) {
+            printf("%s (devTextFileSi): %d %s", prec->name, n, pbuf);
+        }
 
         //
         strncpy(prec->val, pbuf, MAX_STRING_SIZE);
@@ -240,3 +246,8 @@ static long read_si(struct stringinRecord *prec)
     //
     return retval;
 }
+
+// Register symbol(s) used by IOC core
+epicsExportAddress(int, devTextFileSiDebug);
+
+// end

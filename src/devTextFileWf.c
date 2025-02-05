@@ -39,7 +39,9 @@
 
 //
 #include "devTextFile.h"
-#undef DEBUG
+
+//
+static int devTextFileWfDebug = 0;
 
 /***************************************************************
  * waveform (command/response IO)
@@ -79,9 +81,10 @@ static long init_record(struct waveformRecord *prec)
 {
     DBLINK *plink = &prec->inp;
 
-#ifdef DEBUG
-    printf("%s (devTextFileWf) filename: %s\n", prec->name, plink->value.instio.string);
-#endif
+    //
+    if (devTextFileWfDebug>0) {
+        printf("%s (devTextFileWf) filename: %s\n", prec->name, plink->value.instio.string);
+    }
 
     // Link type must be INST_IO
     if (plink->type != INST_IO) {
@@ -150,10 +153,12 @@ static long read_wf(struct waveformRecord *prec)
     TextFile_t *dpvt = prec->dpvt;
     const char *filename = dpvt->name;
 
-#ifdef DEBUG
-    printf("%s (devTextFileWf): filename: %s, nelm:%d\n", prec->name, filename, prec->nelm);
-#endif
+    //
+    if (devTextFileWfDebug>0) {
+        printf("%s (devTextFileWf): filename: %s, nelm:%d\n", prec->name, filename, prec->nelm);
+    }
 
+    //
     FILE *fp = 0;
     if (dpvt->keep) {
         fp = dpvt->fp;
@@ -210,9 +215,10 @@ static long read_wf(struct waveformRecord *prec)
             continue;
         }
 
-#ifdef DEBUG
-        printf("%s (devTextFileWf): %d/%d %s", prec->name, n, prec->nelm, pbuf);
-#endif
+        //
+        if (devTextFileWfDebug>0) {
+            printf("%s (devTextFileWf): %d/%d %s", prec->name, n, prec->nelm, pbuf);
+        }
 
         switch (prec->ftvl) {
         case DBF_CHAR:
@@ -332,3 +338,8 @@ static long read_wf(struct waveformRecord *prec)
     //
     return retval;
 }
+
+// Register symbol(s) used by IOC core
+epicsExportAddress(int, devTextFileWfDebug);
+
+// end
