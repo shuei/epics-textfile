@@ -21,6 +21,7 @@ DBD += devTextFile.dbd
 
 # specify all source files to be compiled and added to the library
 devTextFile_SRCS += devTextFileLi.c
+devTextFile_SRCS += devTextFileLo.c
 devTextFile_SRCS += devTextFileAi.c
 devTextFile_SRCS += devTextFileSi.c
 devTextFile_SRCS += devTextFileWf.c
