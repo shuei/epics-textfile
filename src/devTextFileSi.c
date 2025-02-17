@@ -95,18 +95,9 @@ static long init_record(struct stringinRecord *prec)
     // Allocate private data storage area
     TextFile_t *dpvt = callocMustSucceed(1, sizeof(TextFile_t), "calloc for private_t failed ");
     prec->dpvt = dpvt;
-    dpvt->fp = NULL;
 
     // Extract input filename
-    char *pstr = plink->value.instio.string;
-
-    if (pstr[0] == '+') {
-        // keep file opened and rewind on process
-        dpvt->keep = true;
-        pstr++;
-        //printf("[%s]\n", pstr);
-    }
-
+    const char *pstr = plink->value.instio.string;
     const size_t fsize = strlen(pstr) + 1;
     //if (fsize > MAX_INSTIO_STRING) {
     //    errlogPrintf("%s (devTextFileSi): INP field is too long\n", prec->name);
@@ -115,25 +106,7 @@ static long init_record(struct stringinRecord *prec)
     dpvt->name = callocMustSucceed(1, fsize, "calloc for filename failed");
     strcpy(dpvt->name, pstr);
 
-    // Save inode number
-    struct stat sb;
-    if (stat(dpvt->name, &sb) == -1) {
-        errlogPrintf("%s (devTextFileSi): %s : %s\n", prec->name, dpvt->name, strerror(errno));
-        prec->pact = 1;
-        return -1;
-    }
-    dpvt->ino = sb.st_ino;
-
-    // Open input file if requested
-    if (dpvt->keep) {
-        dpvt->fp = fopen(dpvt->name, "r");
-        if (dpvt->fp == NULL) {
-            errlogPrintf("%s (devTextFileSi): can't open \"%s\"\n", prec->name, dpvt->name);
-            prec->pact = 1;
-            return -1;
-        }
-    }
-
+    //
     return 0;
 }
 
@@ -150,31 +123,12 @@ static long read_si(struct stringinRecord *prec)
     }
 
     //
-    FILE *fp = 0;
-    if (dpvt->keep) {
-        fp = dpvt->fp;
-        if (fseek(fp, 0L, SEEK_SET)!=0) {
-            errlogPrintf("%s (devTextFileSi): fseek failed for \"%s\" : %s\n", prec->name, filename, strerror(errno));
-            prec->nsev = INVALID_ALARM;
-            prec->nsta = READ_ACCESS_ALARM;
-
-            return -1;
-        }
-        if (fflush(fp)!=0) {
-            errlogPrintf("%s (devTextFileSi): fflush failed for \"%s\" : %s\n", prec->name, filename, strerror(errno));
-            prec->nsev = INVALID_ALARM;
-            prec->nsta = READ_ACCESS_ALARM;
-
-            return -1;
-        }
-    } else {
-        fp = fopen(filename, "r");
-        if (fp == NULL) {
-            errlogPrintf("%s (devTextFileSi): can't open \"%s\"\n", prec->name, filename);
-            prec->nsev = INVALID_ALARM;
-            prec->nsta = READ_ACCESS_ALARM;
-            return -1;
-        }
+    FILE *fp = fopen(filename, "r");
+    if (fp == NULL) {
+        errlogPrintf("%s (devTextFileSi): can't open \"%s\"\n", prec->name, filename);
+        prec->nsev = INVALID_ALARM;
+        prec->nsta = READ_ACCESS_ALARM;
+        return -1;
     }
 
     int retval = 0;
@@ -236,11 +190,6 @@ static long read_si(struct stringinRecord *prec)
     if (buf) {
         free(buf);
         buf = NULL;
-    }
-
-    if (!dpvt->keep) {
-        fclose(fp);
-        fp = NULL;
     }
 
     //
