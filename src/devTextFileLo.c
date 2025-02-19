@@ -156,7 +156,7 @@ static long write_lo(struct longoutRecord *prec)
     //
     const int32_t val = prec->val;
     const int ret = fprintf(fp,
-                            "# devTextFileLo on %s saved\n# %s at %s.%06d %s\n%d\n",
+                            "# saved by devTextFileLo on %s\n# %s as of %s.%06d %s\n%d\n",
                             buf.nodename,
                             prec->name, datetime, prec->time.nsec/1000, wday,
                             val);
