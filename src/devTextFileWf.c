@@ -165,7 +165,7 @@ static long read_wf(struct waveformRecord *prec)
         char *pbuf = buf;
 
         // skip until non white-space character.
-        while(isspace(*pbuf)) {
+        while (isspace(*pbuf)) {
             pbuf ++;
         }
 
@@ -328,6 +328,9 @@ static long read_wf(struct waveformRecord *prec)
         free(buf);
         buf = NULL;
     }
+
+    fclose(fp);
+    fp = NULL;
 
     //
     return retval;

@@ -143,7 +143,7 @@ static long read_si(struct stringinRecord *prec)
         char *pbuf = buf;
 
         // skip until non white-space character.
-        while(isspace(*pbuf)) {
+        while (isspace(*pbuf)) {
             pbuf ++;
         }
 
@@ -191,6 +191,9 @@ static long read_si(struct stringinRecord *prec)
         free(buf);
         buf = NULL;
     }
+
+    fclose(fp);
+    fp = NULL;
 
     //
     return retval;
