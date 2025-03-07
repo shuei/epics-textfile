@@ -143,7 +143,7 @@ static long read_li(struct longinRecord *prec)
         char *pbuf = buf;
 
         // skip until non white-space character.
-        while(isspace(*pbuf)) {
+        while (isspace(*pbuf)) {
             pbuf ++;
         }
 
@@ -195,6 +195,9 @@ static long read_li(struct longinRecord *prec)
         free(buf);
         buf = NULL;
     }
+
+    fclose(fp);
+    fp = NULL;
 
     //
     return retval;

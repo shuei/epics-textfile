@@ -144,7 +144,7 @@ static long read_ai(struct aiRecord *prec)
         char *pbuf = buf;
 
         // skip until non white-space character.
-        while(isspace(*pbuf)) {
+        while (isspace(*pbuf)) {
             pbuf ++;
         }
 
@@ -208,6 +208,9 @@ static long read_ai(struct aiRecord *prec)
         free(buf);
         buf = NULL;
     }
+
+    fclose(fp);
+    fp = NULL;
 
     //
     return retval;
