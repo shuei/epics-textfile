@@ -3,28 +3,33 @@ Device Support for Text File
 
 # Overview
 
-This is a device support for reading values from text file. Following record types are supported:
+This is a device support for reading/writing values from/to text file. Following record types are supported for reading:
 - longin
 - ai
 - stringin
 - waveform
 
-# Example
+And following record type is supported for writing:
+- longout
 
-This is an example db file which reads waveform of 5-elements from a text file:
+# Input records
+
+Each time the record is processed the device support opens the file specified in the INP field, reads the data from, and closes it.
+
+An example db file of reading five elements of waveform is shown below:
 
 ```
 record(waveform, "TEST:WAVEFORM:LONG") {
     field(SCAN, "Passive")
     field(DTYP, "Text File")
     field(PINI, "YES")
-    field(INP,  "@/relative/or/absolute/path/to/file")
+    field(INP,  "@/relative/or/absolute/path/to/input_file")
     field(NELM, "5")
     field(FTVL, "LONG")
 }
 ```
 
-where the text file looks like following:
+where the input file looks like:
 
 ```
 # lines staring with '#', ';', '!', are ignred, empty lines as well.
@@ -37,4 +42,25 @@ where the text file looks like following:
  5
 ```
 
-Every time the record is processed, the file is (re-)opened and its content will be put into the record.
+# Output records
+
+Each time the record is processed the device support opens the file specified in the OUT field, writes the data to, and closes it.
+
+An example db file of writing 32 bit integer is shown below:
+
+```
+record(longout, "TEST:LONGOUT") {
+    field(SCAN, "Passive")
+    field(DTYP, "Text File")
+    field(INP,  "@/relative/or/absolute/path/to/output_file")
+    field(OOPT, "On Change")
+}
+```
+
+where the input file looks like:
+
+```
+# saved by devTextFileLo on example-ioc
+# TEST:LONGOUT as of 2025-02-20 16:46:29.362471 (Thu)
+1234
+```

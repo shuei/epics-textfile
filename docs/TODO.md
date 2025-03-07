@@ -16,6 +16,6 @@ TODO list for textfile support
 - [x] Check if FTVL is valid within init_record().
 - [x] Output record support which writes to file.
   - [x] longout record support.
-- [ ] Consider making the device support asynchronys.
+- [ ] Consider making the device support asynchronous.
 - [ ] Add option to keep input file opened rather than re-open on every process.
-  - [ ] Check if inode number has been changed associated to the filename.
+  - [ ] Check if i-node number has been changed associated to the file name.
