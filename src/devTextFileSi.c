@@ -125,7 +125,8 @@ static long read_si(struct stringinRecord *prec)
     //
     FILE *fp = fopen(filename, "r");
     if (fp == NULL) {
-        errlogPrintf("%s (devTextFileSi): can't open \"%s\"\n", prec->name, filename);
+        char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
+        errlogPrintf("%s (devTextFileSi): can't open \"%s\" for reading: %s\n", prec->name, filename, errmsg);
         prec->nsev = INVALID_ALARM;
         prec->nsta = READ_ACCESS_ALARM;
         return -1;

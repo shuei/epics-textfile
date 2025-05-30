@@ -12,10 +12,12 @@
 #include <unistd.h>
 
 #define MAX_INSTIO_STRING  256
+#define ERRBUF 1024
 
 typedef struct {
     IOSCANPVT    ioscanpvt;
     char        *name;
+    char         errmsg[ERRBUF];
 } TextFile_t;
 
 #endif

@@ -127,7 +127,8 @@ static long write_lo(struct longoutRecord *prec)
     //
     FILE *fp = fopen(filename, "w");
     if (fp == NULL) {
-        errlogPrintf("%s (devTextFileLo): can't open \"%s\"\n", prec->name, filename);
+        char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
+        errlogPrintf("%s (devTextFileLo): can't open \"%s\" for writing: %s\n", prec->name, filename, errmsg);
         prec->nsev = INVALID_ALARM;
         prec->nsta = WRITE_ACCESS_ALARM;
         return -1;
@@ -160,6 +161,7 @@ static long write_lo(struct longoutRecord *prec)
                             buf.nodename,
                             prec->name, datetime, prec->time.nsec/1000, wday,
                             val);
+
     if (ret<0) {
         // write error
         errlogPrintf("%s (devTextFileLo): No data was written to the file: \"%s\"\n", prec->name, filename);

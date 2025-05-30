@@ -125,7 +125,8 @@ static long read_li(struct longinRecord *prec)
     //
     FILE *fp = fopen(filename, "r");
     if (fp == NULL) {
-        errlogPrintf("%s (devTextFileLi): can't open \"%s\"\n", prec->name, filename);
+        char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
+        errlogPrintf("%s (devTextFileLi): can't open \"%s\" for reading: %s\n", prec->name, filename, errmsg);
         prec->nsev = INVALID_ALARM;
         prec->nsta = READ_ACCESS_ALARM;
         return -1;
@@ -167,7 +168,8 @@ static long read_li(struct longinRecord *prec)
         errno = 0;
         int32_t val = strtol(pbuf, &endptr, 0);
         if (errno!=0) {
-            errlogPrintf("%s (devTextFileLi): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, strerror(errno));
+            char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
+            errlogPrintf("%s (devTextFileLi): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, errmsg);
         } else if (endptr==pbuf) {
             errlogPrintf("%s (devTextFileLi): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
         } else {

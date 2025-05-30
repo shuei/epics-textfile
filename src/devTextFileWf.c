@@ -144,7 +144,8 @@ static long read_wf(struct waveformRecord *prec)
     //
     FILE *fp = fopen(filename, "r");
     if (fp == NULL) {
-        errlogPrintf("%s (devTextFileWf): can't open \"%s\"\n", prec->name, filename);
+        char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
+        errlogPrintf("%s (devTextFileWf): can't open \"%s\" for reading: %s\n", prec->name, filename, errmsg);
         prec->nsev = INVALID_ALARM;
         prec->nsta = READ_ACCESS_ALARM;
         return -1;
@@ -191,7 +192,8 @@ static long read_wf(struct waveformRecord *prec)
         case DBF_CHAR:
             ival = strtol(pbuf, &endptr, 0);
             if (errno!=0) {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, strerror(errno));
+                char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, errmsg);
             } else if (endptr==pbuf) {
                 errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
             } else {
@@ -204,7 +206,8 @@ static long read_wf(struct waveformRecord *prec)
         case DBF_UCHAR:
             ival = strtol(pbuf, &endptr, 0);
             if (errno!=0) {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, strerror(errno));
+                char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, errmsg);
             } else if (endptr==pbuf) {
                 errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
             } else {
@@ -217,7 +220,8 @@ static long read_wf(struct waveformRecord *prec)
         case DBF_SHORT:
             ival = strtol(pbuf, &endptr, 0);
             if (errno!=0) {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, strerror(errno));
+                char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, errmsg);
             } else if (endptr==pbuf) {
                 errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
             } else {
@@ -230,7 +234,8 @@ static long read_wf(struct waveformRecord *prec)
         case DBF_USHORT:
             ival = strtol(pbuf, &endptr, 0);
             if (errno!=0) {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, strerror(errno));
+                char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, errmsg);
             } else if (endptr==pbuf) {
                 errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
             } else {
@@ -243,7 +248,8 @@ static long read_wf(struct waveformRecord *prec)
         case DBF_LONG:
             ival = strtol(pbuf, &endptr, 0);
             if (errno!=0) {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, strerror(errno));
+                char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, errmsg);
             } else if (endptr==pbuf) {
                 errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
             } else {
@@ -256,7 +262,8 @@ static long read_wf(struct waveformRecord *prec)
         case DBF_ULONG:
             ival = strtol(pbuf, &endptr, 0);
             if (errno!=0) {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, strerror(errno));
+                char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, errmsg);
             } else if (endptr==pbuf) {
                 errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
             } else {
@@ -269,7 +276,8 @@ static long read_wf(struct waveformRecord *prec)
         case DBF_FLOAT:
             dval = strtod(pbuf, &endptr);
             if (errno!=0) {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, strerror(errno));
+                char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, errmsg);
             } else if (endptr==pbuf) {
                 errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
             } else {
@@ -282,7 +290,8 @@ static long read_wf(struct waveformRecord *prec)
         case DBF_DOUBLE:
             dval = strtod(pbuf, &endptr);
             if (errno!=0) {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, strerror(errno));
+                char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
+                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, errmsg);
             } else if (endptr==pbuf) {
                 errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
             } else {
