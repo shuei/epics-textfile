@@ -1,4 +1,4 @@
-EPICS Device Support for Text File
+EPICS Device Support for Text File (devTextFile)
 ==================================
 
 This is a device support for reading/writing values from/to text file.
@@ -9,6 +9,7 @@ This is a device support for reading/writing values from/to text file.
 - stringin
 - waveform
 - longout
+- ao
 
 [docs/Manual.md](docs/Manual.md)
 [docs/TODO.md](docs/TODO.md)

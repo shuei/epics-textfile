@@ -23,6 +23,7 @@ DBD += devTextFile.dbd
 devTextFile_SRCS += devTextFileLi.c
 devTextFile_SRCS += devTextFileLo.c
 devTextFile_SRCS += devTextFileAi.c
+devTextFile_SRCS += devTextFileAo.c
 devTextFile_SRCS += devTextFileSi.c
 devTextFile_SRCS += devTextFileWf.c
 devTextFile_SRCS += devTextFileRead.c

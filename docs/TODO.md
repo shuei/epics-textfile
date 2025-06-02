@@ -16,6 +16,7 @@ TODO list for textfile support
   - [x] Check if FTVL is valid within init_record().
 - [x] Output record support which writes to file.
   - [x] longout record support.
+  - [x] ao record support.
 - [x] Add option to read from file during iocInit().
 - [ ] Add option to keep input file opened rather than re-open on every process.
   - [ ] Check if i-node number has been changed associated to the file name.

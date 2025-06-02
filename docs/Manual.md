@@ -11,6 +11,7 @@ This is a device support for reading/writing values from/to text file. Following
 
 And following record type is supported for writing:
 - longout
+- ao
 
 # Device type (DTYP) field
 In order to use devTextFile, device type (DTYP) field must be set to "Text File" in the record:
@@ -78,3 +79,6 @@ where the `output_file` looks like:
 # TEST:LONGOUT as of 2025-02-20 16:46:29.362471 (Thu)
 1234
 ```
+
+# ASLO/AOFF/SMOO fields
+devTextFile supports ASLO/AOFF fields for ai/ao records and SMOO field for ai records.
