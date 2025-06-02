@@ -13,7 +13,7 @@ And following record type is supported for writing:
 - longout
 
 # Device type (DTYP) field
-In order to use netDev, device type (DTYP) field must be set to "Text File" in the record:
+In order to use devTextFile, device type (DTYP) field must be set to "Text File" in the record:
 
 `field(DTYP, "Text File")`
 
