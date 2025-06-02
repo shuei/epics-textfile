@@ -83,7 +83,7 @@ static long init_record(struct waveformRecord *prec)
 
     //
     if (devTextFileWfDebug>0) {
-        printf("%s (devTextFileWf) filename: %s\n", prec->name, plink->value.instio.string);
+        printf("%s (devTextFileWf): inp=%s nelm=%d\n", prec->name, plink->value.instio.string, prec->nelm);
     }
 
     // Link type must be INST_IO
@@ -110,13 +110,19 @@ static long init_record(struct waveformRecord *prec)
         return -1;
     }
 
-
     // Allocate private data storage area
     TextFile_t *dpvt = callocMustSucceed(1, sizeof(TextFile_t), "calloc for private_t failed ");
     prec->dpvt = dpvt;
 
     // Extract input filename
     const char *pstr = plink->value.instio.string;
+
+    // check if read flag is specified in INP field
+    if (pstr[0] == '<') {
+        dpvt->flag = kRead;
+        pstr++;
+    }
+
     const size_t fsize = strlen(pstr) + 1;
     //if (fsize > MAX_INSTIO_STRING) {
     //    errlogPrintf("%s (devTextFileWf): INP field is too long\n", prec->name);
@@ -124,6 +130,23 @@ static long init_record(struct waveformRecord *prec)
     //}
     dpvt->name = callocMustSucceed(1, fsize, "calloc for filename failed");
     strcpy(dpvt->name, pstr);
+
+    //
+    if (dpvt->flag == kRead) {
+        const char *filename = pstr;
+
+        //
+        long ret = devTextFileRead(filename, prec->bptr, (dbCommon *)prec, prec->ftvl, prec->nelm, devTextFileWfDebug);
+
+        //
+        if (ret < 0) {
+            prec->nord = 0;
+            return -1;
+        }
+
+        //
+        prec->nord = ret;
+    }
 
     //
     return 0;
@@ -142,207 +165,19 @@ static long read_wf(struct waveformRecord *prec)
     }
 
     //
-    FILE *fp = fopen(filename, "r");
-    if (fp == NULL) {
-        char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
-        errlogPrintf("%s (devTextFileWf): can't open \"%s\" for reading: %s\n", prec->name, filename, errmsg);
-        prec->nsev = INVALID_ALARM;
-        prec->nsta = READ_ACCESS_ALARM;
+    long ret = devTextFileRead(filename, prec->bptr, (dbCommon *)prec, prec->ftvl, prec->nelm, devTextFileWfDebug);
+
+    //
+    if (ret < 0) {
+        prec->nord = 0;
         return -1;
     }
 
-    int retval = 0;
-    char *buf = NULL;
-    size_t bufsiz = 0;
-    int nline = 0;
-    void *bptr = prec->bptr;
-    int ival;
-    double dval;
-    uint32_t n = 0;
-    ssize_t nchars;
-
-    while ((nchars = getline(&buf, &bufsiz, fp)) != -1) {
-        nline ++;
-        char *pbuf = buf;
-
-        // skip until non white-space character.
-        while (isspace(*pbuf)) {
-            pbuf ++;
-        }
-
-        // skip empty lines.
-        if (strlen(pbuf)==0) {
-            continue;
-        }
-
-        // skip comments.
-        if (pbuf[0]=='#' || pbuf[0]==';' || pbuf[0]=='!') {
-            continue;
-        }
-
-        //
-        if (devTextFileWfDebug>0) {
-            printf("%s (devTextFileWf): %d/%d %s", prec->name, n, prec->nelm, pbuf);
-        }
-
-        //
-        char *endptr = 0;
-        errno = 0;
-        switch (prec->ftvl) {
-        case DBF_CHAR:
-            ival = strtol(pbuf, &endptr, 0);
-            if (errno!=0) {
-                char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, errmsg);
-            } else if (endptr==pbuf) {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
-            } else {
-                // Read succeeded
-                int8_t *ptr = bptr;
-                ptr[n] = ival;
-                n++;
-            }
-            break;
-        case DBF_UCHAR:
-            ival = strtol(pbuf, &endptr, 0);
-            if (errno!=0) {
-                char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, errmsg);
-            } else if (endptr==pbuf) {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
-            } else {
-                // Read succeeded
-                uint8_t *ptr = bptr;
-                ptr[n] = ival;
-                n++;
-            }
-            break;
-        case DBF_SHORT:
-            ival = strtol(pbuf, &endptr, 0);
-            if (errno!=0) {
-                char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, errmsg);
-            } else if (endptr==pbuf) {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
-            } else {
-                // Read succeeded
-                int16_t *ptr = bptr;
-                ptr[n] = ival;
-                n++;
-            }
-            break;
-        case DBF_USHORT:
-            ival = strtol(pbuf, &endptr, 0);
-            if (errno!=0) {
-                char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, errmsg);
-            } else if (endptr==pbuf) {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
-            } else {
-                // Read succeeded
-                uint16_t *ptr = bptr;
-                ptr[n] = ival;
-                n++;
-            }
-            break;
-        case DBF_LONG:
-            ival = strtol(pbuf, &endptr, 0);
-            if (errno!=0) {
-                char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, errmsg);
-            } else if (endptr==pbuf) {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
-            } else {
-                // Read succeeded
-                int32_t *ptr = bptr;
-                ptr[n] = ival;
-                n++;
-            }
-            break;
-        case DBF_ULONG:
-            ival = strtol(pbuf, &endptr, 0);
-            if (errno!=0) {
-                char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, errmsg);
-            } else if (endptr==pbuf) {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
-            } else {
-                // Read succeeded
-                uint32_t *ptr = bptr;
-                ptr[n] = ival;
-                n++;
-            }
-            break;
-        case DBF_FLOAT:
-            dval = strtod(pbuf, &endptr);
-            if (errno!=0) {
-                char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, errmsg);
-            } else if (endptr==pbuf) {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
-            } else {
-                // Read succeeded
-                float *ptr = bptr;
-                ptr[n] = dval;
-                n++;
-            }
-            break;
-        case DBF_DOUBLE:
-            dval = strtod(pbuf, &endptr);
-            if (errno!=0) {
-                char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, errmsg);
-            } else if (endptr==pbuf) {
-                errlogPrintf("%s (devTextFileWf): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
-            } else {
-                // Read succeeded
-                double *ptr = bptr;
-                ptr[n] = dval;
-                n++;
-            }
-            break;
-        default:
-            // this may not happen as FTVL is already checked in init_record().
-            errlogPrintf("%s (devTextFileWf): unsuppoted FTVL\n", prec->name);
-            return(S_db_badField);
-        }
-
-        if (n >= prec->nelm) {
-            break;
-        }
-    }
+    //
+    prec->nord = ret;
 
     //
-    prec->nord = n; //  number of elements that has been read
-    prec->udf = FALSE;
-
-    // check if any data has been read from the input file
-    if (n == 0) {
-        errlogPrintf("%s (devTextFileWf): No data was read from the file: \"%s\"\n", prec->name, filename);
-        prec->nsev = INVALID_ALARM;
-        prec->nsta = READ_ALARM;
-        retval = -1;
-    }
-
-//    // check if input file reached unexpected end-of-file
-//    if (n < prec->nelm) { // This might be too intolerant. Perhaps we'd better to set severity/status in case of n==0 (i.e. nothing has been read).
-//        errlogPrintf("%s (devTextFileWf): unexpected end-of-file in \"%s\", line %d.\n", prec->name, filename, nline);
-//        prec->nsev = INVALID_ALARM;
-//        prec->nsta = READ_ALARM;
-//        retval = -1;
-//    }
-
-    // cleanup
-    if (buf) {
-        free(buf);
-        buf = NULL;
-    }
-
-    fclose(fp);
-    fp = NULL;
-
-    //
-    return retval;
+    return 0;
 }
 
 // Register symbol(s) used by IOC core

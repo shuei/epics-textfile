@@ -84,7 +84,7 @@ static long init_record(struct longoutRecord *prec)
 
     //
     if (devTextFileLoDebug>0) {
-        printf("%s (devTextFileLo) filename: %s\n", prec->name, plink->value.instio.string);
+        printf("%s (devTextFileLo): out=%s\n", prec->name, plink->value.instio.string);
     }
 
     // Link type must be INST_IO
@@ -100,6 +100,13 @@ static long init_record(struct longoutRecord *prec)
 
     // Extract output filename
     const char *pstr = plink->value.instio.string;
+
+    // check if read flag is specified in OUT field
+    if (pstr[0] == '<') {
+        dpvt->flag = kRead;
+        pstr++;
+    }
+
     const size_t fsize = strlen(pstr) + 1;
     //if (fsize > MAX_INSTIO_STRING) {
     //    errlogPrintf("%s (devTextFileLo): INP field is too long\n", prec->name);
@@ -107,6 +114,19 @@ static long init_record(struct longoutRecord *prec)
     //}
     dpvt->name = callocMustSucceed(1, fsize, "calloc for filename failed");
     strcpy(dpvt->name, pstr);
+
+    //
+    if (dpvt->flag == kRead) {
+        const char *filename = pstr;
+
+        //
+        long ret = devTextFileRead(filename, &prec->val, (dbCommon *)prec, DBF_LONG, 1, devTextFileLoDebug);
+
+        //
+        if (ret < 0) {
+            return -1;
+        }
+    }
 
     //
     return 0;

@@ -12,6 +12,20 @@ This is a device support for reading/writing values from/to text file. Following
 And following record type is supported for writing:
 - longout
 
+# Device type (DTYP) field
+In order to use netDev, device type (DTYP) field must be set to "Text File" in the record:
+
+`field(DTYP, "Text File")`
+
+# Input/output link (INP/OUT) fields
+
+General format for input (INP) and output (OUT) link fields are as following:
+
+`field(INP, "@[<]filename"`
+
+where `filename` is absolute or relative path to the file for reading/writing values. If the filename is prefixed with '<', initial values are read from the file during iocInit (even if it is an outout record).
+
+
 # Input records
 
 Each time the record is processed the device support opens the file specified in the INP field, reads the data from, and closes it.
@@ -29,7 +43,7 @@ record(waveform, "TEST:WAVEFORM:LONG") {
 }
 ```
 
-where the input file looks like:
+where the `input_file` looks like:
 
 ```
 # lines staring with '#', ';', '!', are ignred, empty lines as well.
@@ -57,7 +71,7 @@ record(longout, "TEST:LONGOUT") {
 }
 ```
 
-where the input file looks like:
+where the `output_file` looks like:
 
 ```
 # saved by devTextFileLo on example-ioc

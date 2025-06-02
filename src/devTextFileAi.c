@@ -83,7 +83,7 @@ static long init_record(struct aiRecord *prec)
 
     //
     if (devTextFileAiDebug>0) {
-        printf("%s (devTextFileAi) filename: %s\n", prec->name, plink->value.instio.string);
+        printf("%s (devTextFileAi): inp=%s\n", prec->name, plink->value.instio.string);
     }
 
     // Link type must be INST_IO
@@ -99,6 +99,13 @@ static long init_record(struct aiRecord *prec)
 
     // Extract input filename
     const char *pstr = plink->value.instio.string;
+
+    // check if read flag is specified in INP field
+    if (pstr[0] == '<') {
+        dpvt->flag = kRead;
+        pstr++;
+    }
+
     const size_t fsize = strlen(pstr) + 1;
     //if (fsize > MAX_INSTIO_STRING) {
     //    errlogPrintf("%s (devTextFileLi): INP field is too long\n", prec->name);
@@ -106,6 +113,29 @@ static long init_record(struct aiRecord *prec)
     //}
     dpvt->name = callocMustSucceed(1, fsize, "calloc for filename failed");
     strcpy(dpvt->name, pstr);
+
+    //
+    if (dpvt->flag == kRead) {
+        const char *filename = pstr;
+        double val = 0;
+
+        //
+        long ret = devTextFileRead(filename, &val, (dbCommon *)prec, DBF_DOUBLE, 1, devTextFileAiDebug);
+
+        //
+        if (ret < 0) {
+            return -1;
+        }
+
+        // Apply ASLO & AOFF
+        if (prec->aslo != 0.0) {
+            val *= prec->aslo;
+        }
+        val += prec->aoff;
+
+        //
+        prec->val = val;
+    }
 
     //
     return 0;
@@ -124,98 +154,29 @@ static long read_ai(struct aiRecord *prec)
     }
 
     //
-    FILE *fp = fopen(filename, "r");
-    if (fp == NULL) {
-        char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
-        errlogPrintf("%s (devTextFileAi): can't open \"%s\" for reading: %s\n", prec->name, filename, errmsg);
-        prec->nsev = INVALID_ALARM;
-        prec->nsta = READ_ACCESS_ALARM;
+    double val = 0;
+    long ret = devTextFileRead(filename, &val, (dbCommon *)prec, DBF_DOUBLE, 1, devTextFileAiDebug);
+
+    //
+    if (ret < 0) {
         return -1;
     }
 
-    int retval = 2; // no conversion
-    char *buf = NULL;
-    size_t bufsiz = 0;
-    int nline = 0;
-    uint32_t n = 0;
-    ssize_t nchars;
+    // Apply ASLO & AOFF
+    if (prec->aslo != 0.0) {
+        val *= prec->aslo;
+    }
+    val += prec->aoff;
 
-    while ((nchars = getline(&buf, &bufsiz, fp)) != -1) {
-        nline ++;
-        char *pbuf = buf;
-
-        // skip until non white-space character.
-        while (isspace(*pbuf)) {
-            pbuf ++;
-        }
-
-        // skip empty lines.
-        if (strlen(pbuf)==0) {
-            continue;
-        }
-
-        // skip comments.
-        if (pbuf[0]=='#' || pbuf[0]==';' || pbuf[0]=='!') {
-            continue;
-        }
-
-        //
-        if (devTextFileAiDebug>0) {
-            printf("%s (devTextFileAi): %d %s", prec->name, n, pbuf);
-        }
-
-        //
-        char *endptr = 0;
-        errno = 0;
-        double val = strtod(pbuf, &endptr);
-        if (errno!=0) {
-            char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
-            errlogPrintf("%s (devTextFileAi): parse error in \"%s\", line %d: %s\n", prec->name, filename, nline, errmsg);
-        } else if (endptr==pbuf) {
-            errlogPrintf("%s (devTextFileAi): parse error in \"%s\", line %d: No digits were found\n", prec->name, filename, nline);
-        } else {
-            // Read succeeded
-
-            // Apply ASLO & AOFF
-            if (prec->aslo != 0.0) {
-                val *= prec->aslo;
-            }
-            val += prec->aoff;
-
-            // Apply smoothing algorithm
-            if (prec->smoo != 0.0 && prec->dpvt && finite(prec->val)) {
-                prec->val = val * (1.00 - prec->smoo) + (prec->val * prec->smoo);
-            } else {
-                prec->val = val;
-            }
-
-            n++;
-            break;
-        }
+    // Apply smoothing algorithm
+    if (prec->smoo != 0.0 && prec->dpvt && finite(prec->val)) {
+        prec->val = val * (1.00 - prec->smoo) + (prec->val * prec->smoo);
+    } else {
+        prec->val = val;
     }
 
     //
-    prec->udf = FALSE;
-
-    // check if any data has been read from the input file
-    if (n == 0) {
-        errlogPrintf("%s (devTextFileAi): No data was read from the file: \"%s\"\n", prec->name, filename);
-        prec->nsev = INVALID_ALARM;
-        prec->nsta = READ_ALARM;
-        retval = -1;
-    }
-
-    // cleanup
-    if (buf) {
-        free(buf);
-        buf = NULL;
-    }
-
-    fclose(fp);
-    fp = NULL;
-
-    //
-    return retval;
+    return 2; // no conversion
 }
 
 // Register symbol(s) used by IOC core

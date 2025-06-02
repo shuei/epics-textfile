@@ -82,7 +82,7 @@ static long init_record(struct stringinRecord *prec)
 
     //
     if (devTextFileSiDebug>0) {
-        printf("%s (devTextFileSi) filename: %s\n", prec->name, plink->value.instio.string);
+        printf("%s (devTextFileSi): inp=%s\n", prec->name, plink->value.instio.string);
     }
 
     // Link type must be INST_IO
@@ -98,6 +98,13 @@ static long init_record(struct stringinRecord *prec)
 
     // Extract input filename
     const char *pstr = plink->value.instio.string;
+
+    // check if read flag is specified in INP field
+    if (pstr[0] == '<') {
+        dpvt->flag = kRead;
+        pstr++;
+    }
+
     const size_t fsize = strlen(pstr) + 1;
     //if (fsize > MAX_INSTIO_STRING) {
     //    errlogPrintf("%s (devTextFileSi): INP field is too long\n", prec->name);
@@ -105,6 +112,19 @@ static long init_record(struct stringinRecord *prec)
     //}
     dpvt->name = callocMustSucceed(1, fsize, "calloc for filename failed");
     strcpy(dpvt->name, pstr);
+
+    //
+    if (dpvt->flag == kRead) {
+        const char *filename = pstr;
+
+        //
+        long ret = devTextFileRead(filename, prec->val, (dbCommon *)prec, DBF_STRING, 1, devTextFileSiDebug);
+
+        //
+        if (ret < 0) {
+            return -1;
+        }
+    }
 
     //
     return 0;
@@ -123,81 +143,15 @@ static long read_si(struct stringinRecord *prec)
     }
 
     //
-    FILE *fp = fopen(filename, "r");
-    if (fp == NULL) {
-        char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
-        errlogPrintf("%s (devTextFileSi): can't open \"%s\" for reading: %s\n", prec->name, filename, errmsg);
-        prec->nsev = INVALID_ALARM;
-        prec->nsta = READ_ACCESS_ALARM;
+    long ret = devTextFileRead(filename, prec->val, (dbCommon *)prec, DBF_STRING, 1, devTextFileSiDebug);
+
+    //
+    if (ret < 0) {
         return -1;
     }
 
-    int retval = 0;
-    char *buf = NULL;
-    size_t bufsiz = 0;
-    int nline = 0;
-    uint32_t n = 0;
-    ssize_t nchars;
-
-    while ((nchars = getline(&buf, &bufsiz, fp)) != -1) {
-        nline ++;
-        char *pbuf = buf;
-
-        // skip until non white-space character.
-        while (isspace(*pbuf)) {
-            pbuf ++;
-        }
-
-        // skip empty lines.
-        if (strlen(pbuf)==0) {
-            continue;
-        }
-
-        // skip comments.
-        if (pbuf[0]=='#' || pbuf[0]==';' || pbuf[0]=='!') {
-            continue;
-        }
-
-        //
-        if (devTextFileSiDebug>0) {
-            printf("%s (devTextFileSi): %d %s", prec->name, n, pbuf);
-        }
-
-        //
-        strncpy(prec->val, pbuf, MAX_STRING_SIZE);
-        prec->val[MAX_STRING_SIZE-1] = 0;
-
-        char *p = strchr(prec->val, '\n');
-        if (p) {
-            *p = 0;
-        }
-
-        n++;
-        break;
-    }
-
     //
-    prec->udf = FALSE;
-
-    // check if any data has been read from the input file
-    if (n == 0) {
-        errlogPrintf("%s (devTextFileSi): No data was read from the file: \"%s\"\n", prec->name, filename);
-        prec->nsev = INVALID_ALARM;
-        prec->nsta = READ_ALARM;
-        retval = -1;
-    }
-
-    // cleanup
-    if (buf) {
-        free(buf);
-        buf = NULL;
-    }
-
-    fclose(fp);
-    fp = NULL;
-
-    //
-    return retval;
+    return 0;
 }
 
 // Register symbol(s) used by IOC core
