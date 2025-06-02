@@ -81,7 +81,7 @@ static long init_record(struct stringinRecord *prec)
     DBLINK *plink = &prec->inp;
 
     //
-    if (devTextFileSiDebug>0) {
+    if (devTextFileSiDebug > 0) {
         printf("%s (devTextFileSi): inp=%s\n", prec->name, plink->value.instio.string);
     }
 
@@ -138,7 +138,7 @@ static long read_si(struct stringinRecord *prec)
     const char *filename = dpvt->name;
 
     //
-    if (devTextFileSiDebug>0) {
+    if (devTextFileSiDebug > 0) {
         printf("%s (devTextFileSi): filename: %s\n", prec->name, filename);
     }
 

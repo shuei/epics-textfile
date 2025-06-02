@@ -82,7 +82,7 @@ static long init_record(struct aiRecord *prec)
     DBLINK *plink = &prec->inp;
 
     //
-    if (devTextFileAiDebug>0) {
+    if (devTextFileAiDebug > 0) {
         printf("%s (devTextFileAi): inp=%s\n", prec->name, plink->value.instio.string);
     }
 
@@ -138,7 +138,7 @@ static long init_record(struct aiRecord *prec)
     }
 
     //
-    return 0;
+    return 2; // no conversion
 }
 
 //
@@ -149,7 +149,7 @@ static long read_ai(struct aiRecord *prec)
     const char *filename = dpvt->name;
 
     //
-    if (devTextFileAiDebug>0) {
+    if (devTextFileAiDebug > 0) {
         printf("%s (devTextFileAi): filename: %s\n", prec->name, filename);
     }
 

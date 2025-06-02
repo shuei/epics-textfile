@@ -82,7 +82,7 @@ static long init_record(struct waveformRecord *prec)
     DBLINK *plink = &prec->inp;
 
     //
-    if (devTextFileWfDebug>0) {
+    if (devTextFileWfDebug > 0) {
         printf("%s (devTextFileWf): inp=%s nelm=%d\n", prec->name, plink->value.instio.string, prec->nelm);
     }
 
@@ -160,7 +160,7 @@ static long read_wf(struct waveformRecord *prec)
     const char *filename = dpvt->name;
 
     //
-    if (devTextFileWfDebug>0) {
+    if (devTextFileWfDebug > 0) {
         printf("%s (devTextFileWf): filename: %s, nelm:%d\n", prec->name, filename, prec->nelm);
     }
 

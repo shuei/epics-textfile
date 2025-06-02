@@ -83,7 +83,7 @@ static long init_record(struct longoutRecord *prec)
     DBLINK *plink = &prec->out;
 
     //
-    if (devTextFileLoDebug>0) {
+    if (devTextFileLoDebug > 0) {
         printf("%s (devTextFileLo): out=%s\n", prec->name, plink->value.instio.string);
     }
 
@@ -140,7 +140,7 @@ static long write_lo(struct longoutRecord *prec)
     const char *filename = dpvt->name;
 
     //
-    if (devTextFileLoDebug>0) {
+    if (devTextFileLoDebug > 0) {
         printf("%s (devTextFileLo): filename: %s\n", prec->name, filename);
     }
 
@@ -170,7 +170,7 @@ static long write_lo(struct longoutRecord *prec)
     uname(&buf);
 
     //
-    if (devTextFileLoDebug>0) {
+    if (devTextFileLoDebug > 0) {
         printf("%s (devTextFileLo): %s.%06d %s\n", prec->name, datetime, prec->time.nsec/1000, wday);
     }
 
@@ -182,7 +182,7 @@ static long write_lo(struct longoutRecord *prec)
                             prec->name, datetime, prec->time.nsec/1000, wday,
                             val);
 
-    if (ret<0) {
+    if (ret < 0) {
         // write error
         errlogPrintf("%s (devTextFileLo): No data was written to the file: \"%s\"\n", prec->name, filename);
         prec->nsev = INVALID_ALARM;

@@ -81,7 +81,7 @@ static long init_record(struct longinRecord *prec)
     DBLINK *plink = &prec->inp;
 
     //
-    if (devTextFileLiDebug>0) {
+    if (devTextFileLiDebug > 0) {
         printf("%s (devTextFileLi): inp=%s\n", prec->name, plink->value.instio.string);
     }
 
@@ -138,7 +138,7 @@ static long read_li(struct longinRecord *prec)
     const char *filename = dpvt->name;
 
     //
-    if (devTextFileLiDebug>0) {
+    if (devTextFileLiDebug > 0) {
         printf("%s (devTextFileLi): filename: %s\n", prec->name, filename);
     }
 

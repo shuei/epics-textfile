@@ -50,7 +50,7 @@ long devTextFileRead(const char *filename, void *bptr, dbCommon *prec, int ftvl,
     const char *ftvlstr = (pamapdbfType[ftvl].strvalue) + 4;
 
     //
-    if (debug>0) {
+    if (debug > 0) {
         printf("%s (%s): filename: %s ftvl=%s nelm=%d\n", prec->name, __func__, filename, ftvlstr, nelm);
     }
 
@@ -81,17 +81,17 @@ long devTextFileRead(const char *filename, void *bptr, dbCommon *prec, int ftvl,
         }
 
         // skip empty lines.
-        if (strlen(pbuf)==0) {
+        if (strlen(pbuf) == 0) {
             continue;
         }
 
         // skip comments.
-        if (pbuf[0]=='#' || pbuf[0]==';' || pbuf[0]=='!') {
+        if (pbuf[0] == '#' || pbuf[0] == ';' || pbuf[0] == '!') {
             continue;
         }
 
         //
-        if (debug>0) {
+        if (debug > 0) {
             printf("%s (%s): %d/%d %s", prec->name, __func__, n+1, nelm, pbuf);
         }
 
@@ -116,7 +116,7 @@ long devTextFileRead(const char *filename, void *bptr, dbCommon *prec, int ftvl,
             if (errno != 0) {
                 char *errmsg = strerror_r(errno, dpvt->errmsg, ERRBUF); // GNU-specific version is assumed
                 errlogPrintf("%s (%s): parse error in \"%s\", line %d: %s\n", prec->name, __func__, filename, nline, errmsg);
-            } else if (endptr==pbuf) {
+            } else if (endptr == pbuf) {
                 errlogPrintf("%s (%s): parse error in \"%s\", line %d: No digits were found\n", prec->name, __func__, filename, nline);
             } else {
                 // Read succeeded
@@ -255,7 +255,7 @@ long devTextFileRead(const char *filename, void *bptr, dbCommon *prec, int ftvl,
     fp = NULL;
 
     //
-    if (debug>0) {
+    if (debug > 0) {
         printf("%s (%s): ret = %d \n", prec->name, __func__, n);
     }
 
